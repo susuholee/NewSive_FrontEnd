@@ -4,6 +4,7 @@ export interface GNewsSource {
 }
 
 export interface GNewsArticle {
+  id: string;
   title: string;
   description: string;
   content: string;
@@ -26,4 +27,5 @@ export type News = {
     thumbnail_url : string | null;
     published_at : string;
     original_link : string;
+    source_name : string;
 }
