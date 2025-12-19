@@ -1,20 +1,10 @@
-import { GetGNews } from '../external/gnews/gnews.api';
 import { News } from '../types/news';
-import { GNewsArticle } from '../types/news';
-
-function mapGNewsToNews(article: GNewsArticle): News {
-  return {
-    id: article.id, // 기사 ID 
-    title: article.title, // 제목
-    summary: article.description, // 내용
-    thumbnail_url: article.image, // 이미지
-    published_at: article.publishedAt, // 발행일
-    original_link: article.url,
-    source_name: article.source.name,
-  };
-}
+import { mapGNewsArticleToNews } from '../mappers/news.mapper';
+import { GNewsResponse } from '../dto/gnews.dto';
+import { apiClient } from '../lib/axios';
 
 export async function getNewsList(): Promise<News[]> {
-  const data = await GetGNews();
-  return data.articles.map(mapGNewsToNews);
+  const data = await apiClient.get<GNewsResponse>('/api/news');
+
+  return data.data.articles.map(mapGNewsArticleToNews);
 }
