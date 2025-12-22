@@ -1,4 +1,5 @@
-
+"use client";
+import Protected from "@/shared/components/Protected";
 type Notification = {
   id: number;
   message: string;
@@ -29,19 +30,21 @@ const mockNotifications: Notification[] = [
 
 export default function NotificationsPage() {
   return (
+    <Protected>
+
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">알림</h1>
 
       <ul className="space-y-3">
         {mockNotifications.map((notification) => (
           <li
-            key={notification.id}
-            className={`cursor-pointer rounded border p-4 ${
-              notification.isRead
+          key={notification.id}
+          className={`cursor-pointer rounded border p-4 ${
+            notification.isRead
                 ? "bg-white"
                 : "bg-blue-50 border-blue-200"
-            }`}
-          >
+              }`}
+              >
             <p className="text-sm">{notification.message}</p>
             <p className="mt-1 text-xs text-gray-500">
               {notification.createdAt}
@@ -56,5 +59,6 @@ export default function NotificationsPage() {
         </p>
       )}
     </main>
+  </Protected>
   );
 }

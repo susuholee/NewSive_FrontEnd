@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function MyPage() {
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
@@ -13,28 +15,28 @@ export default function MyPage() {
         <h2 className="mb-3 font-semibold">설정</h2>
         <ul className="space-y-2 text-sm">
           <li>
-            <a
+            <Link 
               href="/mypage/account"
               className="text-blue-600 underline"
             >
               계정 정보 수정
-            </a>
+            </Link>
           </li>
           <li>
-            <a
+            <Link
               href="/settings/notifications"
               className="text-blue-600 underline"
             >
               알림 설정
-            </a>
+            </Link>
           </li>
           <li>
-            <a
+            <Link
               href="/mypage/friends"
               className="text-blue-600 underline"
             >
               친구 관리
-            </a>
+            </Link>
           </li>
         </ul>
       </section>

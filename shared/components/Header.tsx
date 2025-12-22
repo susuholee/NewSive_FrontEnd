@@ -1,6 +1,17 @@
+'use client';
 import Link from "next/link";
+import { useAuthStore } from "../store/authStore";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
+  const router = useRouter()
+  const { isLoggedIn, user, logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    logout();
+    router.push('/login');
+  }
+
   return (
     <header className="border-b bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -24,15 +35,31 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3 text-sm">
-          <Link href="/login" className="hover:underline">
-            로그인
-          </Link>
-          <Link
-            href="/signup"
-            className="rounded border px-3 py-1"
-          >
-            회원가입
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <span className="text-gray-700">
+                {user?.nickname}님
+              </span>
+              <button
+                onClick={handleLogout}
+                className="rounded border px-3 py-1 hover:bg-gray-100"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="hover:underline">
+                로그인
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded border px-3 py-1"
+              >
+                회원가입
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

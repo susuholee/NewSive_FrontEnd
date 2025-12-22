@@ -1,3 +1,6 @@
+"use client";
+import Protected from "@/shared/components/Protected";
+
 type ChatMessage = {
   id: number;
   user: string;
@@ -30,6 +33,8 @@ const mockMessages: ChatMessage[] = [
 
 export default function ChatPage() {
   return (
+    <Protected>
+
     <main className="flex h-screen flex-col">
       <header className="border-b px-4 py-3 font-semibold">
         실시간 채팅
@@ -38,18 +43,18 @@ export default function ChatPage() {
       <section className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
         {mockMessages.map((msg) => (
           <div
-            key={msg.id}
-            className={`flex ${
+          key={msg.id}
+          className={`flex ${
               msg.isMe ? "justify-end" : "justify-start"
             }`}
-          >
+            >
             <div
               className={`max-w-xs rounded-lg px-3 py-2 text-sm ${
                 msg.isMe
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-black"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-black"
               }`}
-            >
+              >
               {!msg.isMe && (
                 <p className="mb-1 text-xs text-gray-500">
                   {msg.user}
@@ -70,12 +75,13 @@ export default function ChatPage() {
             type="text"
             placeholder="메시지를 입력하세요"
             className="flex-1 rounded border px-3 py-2"
-          />
+            />
           <button className="rounded bg-blue-600 px-4 py-2 text-white">
             전송
           </button>
         </div>
       </footer>
     </main>
+  </Protected>
   );
 }
