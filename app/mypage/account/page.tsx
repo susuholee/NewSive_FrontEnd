@@ -1,4 +1,21 @@
+'use client';
+import { useAuthStore } from "@/shared/store/authStore";
+import { useEffect, useState } from "react";
 export default function AccountPage() {
+  const user = useAuthStore((state) => state.user);
+  const [nickname, setNickname] = useState('');
+  useEffect(() => {
+    if (user) {
+      setNickname(user.nickname)
+    }
+  }, [user]);
+
+  const handleSave = () => {
+    console.log({
+      username : user?.username,
+      nickname,
+    })
+  }
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">계정 정보 수정</h1>
@@ -10,6 +27,8 @@ export default function AccountPage() {
             type="text"
             className="mt-1 w-full rounded border px-3 py-2"
             placeholder="닉네임을 입력하세요"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
           />
         </div>
 
@@ -20,7 +39,7 @@ export default function AccountPage() {
             type="text"
             disabled
             className="mt-1 w-full rounded border bg-gray-100 px-3 py-2 text-gray-500"
-            value="user123"
+            value={user?.username}
           />
         </div>
 
@@ -51,6 +70,7 @@ export default function AccountPage() {
         <button
           type="button"
           className="rounded bg-blue-600 px-4 py-2 text-white"
+          onClick={handleSave}
         >
           저장
         </button>

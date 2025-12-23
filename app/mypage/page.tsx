@@ -1,14 +1,18 @@
+'use client';
+
 import Link from "next/link";
+import { useAuthStore } from "@/shared/store/authStore";
 
 export default function MyPage() {
+  const user = useAuthStore((state) => state.user);
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">마이페이지</h1>
 
       <section className="mb-8 rounded border p-4">
         <h2 className="mb-2 font-semibold">내 정보</h2>
-        <p className="text-sm text-gray-700">아이디: user123</p>
-        <p className="text-sm text-gray-700">닉네임: 뉴스유저</p>
+        <p className="text-sm text-gray-700">계정 아이디{user?.username}</p>
+        <p className="text-sm text-gray-700">계정 닉네임: {user?.nickname}</p>
       </section>
 
       <section className="mb-8 rounded border p-4">

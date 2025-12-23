@@ -1,13 +1,12 @@
 import { create } from 'zustand'
 
 type User = {
-  id: number
   username: string
   nickname: string
 }
 
 type AuthState = {
-  user: User | null
+  user: User | null;
   isLoggedIn: boolean
   login: (user: User) => void
   logout: () => void
