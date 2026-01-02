@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/shared/components/Header";
+import WeatherWidget from "@/shared/components/WeatherWidget";
 import { Providers } from "./provider";
 
 const geistSans = Geist({
@@ -21,17 +22,27 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
+    <html lang="ko">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
           <Header />
-          {children}
+          <div className="mx-auto max-w-6xl px-4 py-6">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+              <main>{children}</main>
+              <aside className="hidden lg:block">
+                <div className="sticky top-20">
+                  <WeatherWidget />
+                </div>
+              </aside>
+
+            </div>
+          </div>
         </Providers>
       </body>
     </html>
