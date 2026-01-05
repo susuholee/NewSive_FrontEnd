@@ -1,16 +1,17 @@
 'use client';
-import Link from "next/link";
-import { useAuthStore } from "../store/authStore";
-import { useRouter } from "next/navigation";
+
+import Link from 'next/link';
+import { useAuthStore } from '../store/authStore';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
-  const router = useRouter()
-  const { isLoggedIn, user, logout } = useAuthStore();
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
 
   const handleLogout = async () => {
     logout();
     router.push('/login');
-  }
+  };
 
   return (
     <header className="border-b bg-white">
@@ -35,10 +36,10 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3 text-sm">
-          {isLoggedIn ? (
+          {user? (
             <>
               <span className="text-gray-700">
-                {user?.nickname}님
+                {user.nickname}님
               </span>
               <button
                 onClick={handleLogout}

@@ -1,5 +1,4 @@
 "use client";
-import Protected from "@/shared/components/Protected";
 import { useAuthStore } from "@/shared/store/authStore";
 import { use, useState } from "react";
 
@@ -55,7 +54,6 @@ export default function ChatPage() {
 };
 
   return (
-    <Protected>
     <main className="flex h-screen flex-col">
       <header className="border-b px-4 py-3 font-semibold">
         {
@@ -118,6 +116,6 @@ export default function ChatPage() {
         </div>
       </footer>
     </main>
-  </Protected>
+
   );
 }

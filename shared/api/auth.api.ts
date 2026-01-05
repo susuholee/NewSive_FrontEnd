@@ -1,21 +1,12 @@
-import { LoginResult } from "../types/login";
+import { apiClient } from "../lib/axios";
+import type { User } from "../types/user";
 
-export async function login(
-  username: string,
-  password: string
-): Promise<LoginResult> {
-    await new Promise((resolve) => setTimeout(resolve, 600));
-
-
-  if (username !== 'suho123' || password !== '1234') {
-    throw new Error('아이디 또는 비밀번호가 올바르지 않습니다.');
-  }
-
-  return {
-    user: {
-      id: 1,
-      username: 'suho123',
-      nickname: '수호',
-    },
-  };
+export async function getMe() : Promise<User> {
+    try {
+        const res = await apiClient.get<User>('/auth/me');
+        return res.data;
+    } catch (error) {
+       console.log("로그인 요청 오류", error);
+       throw new Error("알 수 없는 오류가 발생했습니다.");
+    }
 }

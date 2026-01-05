@@ -1,5 +1,4 @@
 "use client";
-import Protected from "@/shared/components/Protected";
 type Notification = {
   id: number;
   message: string;
@@ -30,8 +29,6 @@ const mockNotifications: Notification[] = [
 
 export default function NotificationsPage() {
   return (
-    <Protected>
-
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">알림</h1>
 
@@ -59,6 +56,5 @@ export default function NotificationsPage() {
         </p>
       )}
     </main>
-  </Protected>
   );
 }
