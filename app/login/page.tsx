@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { login } from '@/shared/api/login.api';
 import { useAuthStore } from '@/shared/store/authStore';
 import Link from 'next/link';
+import axios from 'axios';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,13 +28,14 @@ export default function LoginPage() {
     onSuccess: (data) => {
       setLogin(data.user);
     },
-    onError: (error) => {
-      if (error instanceof Error) {
-        setErrorMsg(error.message);
-      } else {
-        setErrorMsg('로그인에 실패했습니다.');
-      }
-    },
+   onError: (error) => {
+    if (axios.isAxiosError(error)) {
+      setErrorMsg(
+        error.response?.data?.message??
+        '아이디 또는 비밀번호가 올바르지 않습니다.'
+      );
+    }
+  }
   });
 
   const handleLogin = () => {

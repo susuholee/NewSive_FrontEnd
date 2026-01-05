@@ -1,4 +1,6 @@
 "use client";
+import { useRequireAuth } from "@/shared/hooks/useRequireAuth";
+
 type Notification = {
   id: number;
   message: string;
@@ -28,6 +30,7 @@ const mockNotifications: Notification[] = [
 ];
 
 export default function NotificationsPage() {
+  useRequireAuth();
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">알림</h1>

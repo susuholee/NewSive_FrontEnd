@@ -1,6 +1,7 @@
 "use client";
 import { useAuthStore } from "@/shared/store/authStore";
-import { use, useState } from "react";
+import { useState } from "react";
+import { useRequireAuth } from "@/shared/hooks/useRequireAuth";
 
 type ChatMessage = {
   id: number;
@@ -31,6 +32,7 @@ const mockMessages: ChatMessage[] = [
 ];
 
 export default function ChatPage() {
+  useRequireAuth();
   const user = useAuthStore((state) => state.user);
   const [message, setMessage] = useState<ChatMessage[]>(mockMessages);
   const [messageInput, setMessageInput] = useState('');
