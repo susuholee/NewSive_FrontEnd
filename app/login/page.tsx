@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { login } from '@/shared/service/auth.service';
+import { login } from '@/shared/api/auth.api';
 import { useAuthStore } from '@/shared/store/authStore';
 import Link from 'next/link';
 
