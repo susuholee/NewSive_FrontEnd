@@ -4,6 +4,7 @@ import type { User } from '@/shared/types/user';
 type AuthState = {
   user: User | null;
   login: (user: User) => void;
+  updateUser: (partial: Partial<User>) => void;
   logout: () => void;
 };
 
@@ -14,6 +15,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user,
     }),
+
+  updateUser: (partial) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...partial } : state.user,
+    })),
 
   logout: () =>
     set({

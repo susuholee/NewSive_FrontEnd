@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../store/authStore';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
 import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
-import { logout as logoutApi } from '../api/logout.api';
+import { logout as logoutApi } from '../api/auth.api';
 
 export default function Header() {
   const router = useRouter();

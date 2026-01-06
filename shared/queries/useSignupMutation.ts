@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import type { SignupRequest } from '@/shared/types/auth';
-import { signup } from '../api/signup.api';
+import { signup } from '../api/users.api';
 
 type SignupErrorResponse = {
   message?: string;

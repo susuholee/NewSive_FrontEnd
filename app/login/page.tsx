@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { login } from '@/shared/api/login.api';
+import { login } from '@/shared/api/auth.api';
 import { useAuthStore } from '@/shared/store/authStore';
 import Link from 'next/link';
 import axios from 'axios';
