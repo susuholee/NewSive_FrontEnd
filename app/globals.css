@@ -1,26 +1,67 @@
 @import "tailwindcss";
 
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(99% 0 0);
+  --foreground: oklch(20% 0.01 250);
+
+ 
+  --surface-muted: oklch(97% 0.01 250);
+  --surface-card: oklch(100% 0 0);
+
+
+  --primary: oklch(60% 0.12 182);       
+  --primary-hover: oklch(52% 0.12 182); 
+  --primary-soft: oklch(85.5% 0.138 181.071); 
+
+
+  --text-primary: oklch(0% 0 0);
+  --text-secondary: oklch(45% 0.01 250);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface-card);
+  --color-surface-muted: var(--surface-muted);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+
+  --color-danger: var(--danger);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: oklch(12% 0.01 250);
+    --foreground: oklch(95% 0 0);
+
+    --surface-muted: oklch(18% 0.01 250);
+    --surface-card: oklch(16% 0.01 250);
+
+    --text-primary: oklch(95% 0 0);
+    --text-secondary: oklch(70% 0.01 250);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+
+    --surface-muted: #111827;
+    --surface-card: #0f172a;
+
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+  }
 }
+
