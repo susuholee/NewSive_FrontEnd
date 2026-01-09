@@ -64,6 +64,15 @@ export default function MyPage() {
               </Link>
             </li>
 
+              <li>
+              <Link
+                href="/mypage/friends_requests"
+                className="flex items-center justify-between px-6 py-4 transition hover:bg-gray-50"
+              >
+                <span className="text-gray-800">친구 요청</span>
+              </Link>
+            </li>
+
             <li>
               <Link
                 href="/mypage/friends"
@@ -72,6 +81,8 @@ export default function MyPage() {
                 <span className="text-gray-800">친구 관리</span>
               </Link>
             </li>
+
+            
           </ul>
         </section>
       </div>

@@ -12,3 +12,10 @@ export type Notification = {
   isRead: boolean;
   createdAt: string; 
 };
+
+export type NotificationSetting = {
+  allowNotification: boolean;
+  allowBreakingNews: boolean;
+  allowKeywordAlert: boolean;
+  defaultRegion?: string;
+};
