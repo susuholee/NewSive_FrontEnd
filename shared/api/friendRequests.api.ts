@@ -6,10 +6,18 @@ export const getReceivedFriendRequests = async (): Promise<FriendRequest[]> => {
   return res.data;
 };
 
+export const getSentFriendRequests = async (): Promise<FriendRequest[]> => {
+  const res = await apiClient.get("/friend_requests/sent");
+  return res.data;
+}
+
+
 export const acceptFriendRequest = async (requestId: number) => {
-  return apiClient.post(`/friend_requests/${requestId}/accept`);
+  const res = await apiClient.post(`/friend_requests/${requestId}/accept`);
+  return res.data;
 };
 
 export const rejectFriendRequest = async (requestId: number) => {
-  return apiClient.post(`/friend_requests/${requestId}/reject`);
+  const res = await apiClient.post(`/friend_requests/${requestId}/reject`);
+  return res.data;
 };

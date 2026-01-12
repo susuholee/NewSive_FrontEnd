@@ -1,9 +1,17 @@
 export type FriendRequest = {
   id: number;
-  user: {
+  createdAt: string;
+
+
+  user?: {
     id: number;
     username: string;
     nickname: string;
   };
-  createdAt: string;
+
+  friendUser?: {
+    id: number;
+    username: string;
+    nickname: string;
+  };
 };

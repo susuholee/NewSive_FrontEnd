@@ -5,6 +5,8 @@ import Header from "@/shared/components/Header";
 import WeatherWidget from "@/shared/components/WeatherWidget";
 import { Providers } from "./provider";
 import AuthInitializer from "@/shared/components/AuthInitializer";
+import FriendSummaryWidget from "@/shared/components/friends/FriendSummaryWidget";
+import FriendsSidebar from "@/shared/components/friends/FriendSidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,6 +42,7 @@ export default function RootLayout({
               <aside className="hidden lg:block">
                 <div className="sticky top-20">
                   <WeatherWidget />
+                <FriendsSidebar/>
                 </div>
               </aside>
             </div>

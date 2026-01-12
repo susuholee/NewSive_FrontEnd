@@ -6,12 +6,14 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 import { useAuthStore } from '../store/authStore';
+import { useUIStore } from '../store/uiStore';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+
 import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
 import { logout as logoutApi } from '../api/auth.api';
 import { ConfirmModal } from './ConfirmModal';
 
-import { getNotifications,getUnreadCount, readNotification} from '@/shared/api/notifications.api';
+import { getNotifications,getUnreadCount,readNotification} from '@/shared/api/notifications.api';
 
 import type { Notification } from '../types/notification';
 import { notificationUIMap } from '@/shared/constants/notificationUI';
@@ -23,6 +25,8 @@ export default function Header() {
 
   const { user, logout: clearUser } = useAuthStore();
   const { isAuthenticated } = useAuthGuard();
+
+  const openFriendsSidebar = useUIStore((s) => s.openFriendsSidebar);
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -60,6 +64,7 @@ export default function Header() {
     }
   };
 
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -78,6 +83,7 @@ export default function Header() {
     if (!showDropdown || !isAuthenticated || !user) return;
     getNotifications().then(setNotifications);
   }, [showDropdown, isAuthenticated, user]);
+
 
   useEffect(() => {
     if (!showDropdown) return;
@@ -111,6 +117,7 @@ export default function Header() {
             NewSive
           </Link>
 
+      
           <nav className="flex items-center gap-1 rounded-full bg-surface-muted p-1 text-sm">
             {NAV_ITEMS.map((item) => (
               <button
@@ -132,8 +139,8 @@ export default function Header() {
             ))}
           </nav>
 
-  
-          <div className="flex items-center gap-3 relative">
+      
+          <div className="relative flex items-center gap-3">
             {user ? (
               <>
                 <div ref={dropdownRef} className="relative">
@@ -160,7 +167,7 @@ export default function Header() {
 
                   {showDropdown && (
                     <div className="absolute right-0 top-10 z-50 w-80 rounded-2xl border bg-white shadow-xl">
-                      <div className="px-4 py-3 text-sm font-semibold border-b">
+                      <div className="border-b px-4 py-3 text-sm font-semibold">
                         알림
                       </div>
 
@@ -191,8 +198,24 @@ export default function Header() {
                                     )
                                   );
                                 }
+
                                 setShowDropdown(false);
-                                if (n.link) router.push(n.link);
+
+                              
+                                if (n.type === 'FRIEND_REQUEST') {
+                                  openFriendsSidebar('received');
+                                  return;
+                                }
+
+                                if (n.type === 'FRIEND_ACCEPTED') {
+                                  openFriendsSidebar('friends');
+                                  return;
+                                }
+
+                                
+                                if (n.link) {
+                                  router.push(n.link);
+                                }
                               }}
                               className="cursor-pointer px-4 py-3 transition hover:bg-gray-50"
                             >
@@ -234,7 +257,7 @@ export default function Header() {
                   )}
                 </div>
 
-             
+                {/* User */}
                 <div className="flex items-center gap-2 rounded-full bg-surface-muted px-2 py-1">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                     {user.nickname?.[0]}
