@@ -40,7 +40,7 @@ export default function RootLayout({
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
               <main>{children}</main>
               <aside className="hidden lg:block">
-                <div className="sticky top-20">
+                <div className="sticky top-20 flex flex-col gap-6">
                   <WeatherWidget />
                 <FriendsSidebar/>
                 </div>

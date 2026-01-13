@@ -11,17 +11,21 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    const run = async () => {
+      if (!user) {
+        setNotifications([]);
+        return;
+      }
 
-    const init = async () => {
       const data = await getNotifications();
       setNotifications(data);
-
       await readAllNotifications();
     };
 
-    init();
-  }, [user]);
+    run();
+  }, [user?.id]);
+
+
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">

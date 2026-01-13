@@ -1,6 +1,6 @@
 export type Friend = {
   id: number;    
-  userId: number;   
+  friendId: number;   
   username: string;
   nickname: string;
 };

@@ -33,24 +33,45 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
     gender: undefined,
   });
 
-  const inputClass =
-    'w-full border border-gray-300 rounded-md px-3 py-2 ' +
-    'focus:outline-none focus:ring-2 focus:ring-black';
+
+
+  const inputClass = `
+    w-full rounded-lg
+    border border-text-secondary/25
+    bg-surface
+    px-3 py-2.5
+    text-text-primary
+    transition
+    focus:outline-none
+    focus:ring-1 focus:ring-primary/60
+  `;
+
+  const labelClass =
+    'mb-1 block text-sm text-text-secondary';
+
+  /* =======================
+     비밀번호 검증
+  ======================= */
 
   const normalizedPassword = signupValues.password.trim();
-  const normalizedPasswordConfirm = signupValues.passwordConfirm.trim();
+  const normalizedPasswordConfirm =
+    signupValues.passwordConfirm.trim();
 
-  const isPasswordLengthValid = normalizedPassword.length >= PASSWORD_RULES.minLength;
+  const isPasswordLengthValid =
+    normalizedPassword.length >= PASSWORD_RULES.minLength;
 
-  const isPasswordRegexValid = PASSWORD_RULES.regex.test(normalizedPassword);
+  const isPasswordRegexValid =
+    PASSWORD_RULES.regex.test(normalizedPassword);
 
-  const isPasswordValid = isPasswordLengthValid && isPasswordRegexValid;
+  const isPasswordValid =
+    isPasswordLengthValid && isPasswordRegexValid;
 
   return (
     <>
-      <form className="w-full max-w-sm space-y-4">
-        <div className="space-y-1">
-          <label className="text-sm font-medium">아이디</label>
+      <form className="space-y-5">
+        {/* 아이디 */}
+        <div>
+          <label className={labelClass}>아이디</label>
 
           <div className="flex gap-2">
             <input
@@ -68,7 +89,6 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
 
             <button
               type="button"
-              className="px-3 py-2 text-sm rounded-md border"
               disabled={
                 !signupValues.username ||
                 usernameStatus === 'checking'
@@ -84,28 +104,41 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
                   setUsernameStatus('unavailable');
                 }
               }}
+              className="
+                rounded-lg
+                border border-text-secondary/25
+                px-3 py-2
+                text-sm text-text-secondary
+                transition
+                hover:border-primary-soft
+                hover:text-text-primary
+                disabled:opacity-40
+              "
             >
               확인
             </button>
           </div>
 
           {usernameStatus === 'checking' && (
-            <p className="text-xs text-gray-500">확인 중...</p>
+            <p className="mt-1 text-xs text-text-secondary">
+              확인 중...
+            </p>
           )}
           {usernameStatus === 'available' && (
-            <p className="text-xs text-green-600">
+            <p className="mt-1 text-xs text-primary">
               사용 가능한 아이디입니다
             </p>
           )}
           {usernameStatus === 'unavailable' && (
-            <p className="text-xs text-red-500">
+            <p className="mt-1 text-xs text-danger">
               이미 사용 중인 아이디입니다
             </p>
           )}
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium">비밀번호</label>
+        {/* 비밀번호 */}
+        <div>
+          <label className={labelClass}>비밀번호</label>
           <input
             type="password"
             value={signupValues.password}
@@ -119,12 +152,12 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
             className={inputClass}
           />
 
-          <ul className="text-xs space-y-1">
+          <ul className="mt-2 space-y-1 text-xs text-text-secondary">
             <li
               className={
                 isPasswordLengthValid
-                  ? 'text-green-600'
-                  : 'text-gray-400'
+                  ? 'text-primary'
+                  : ''
               }
             >
               8자 이상
@@ -132,8 +165,8 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
             <li
               className={
                 isPasswordRegexValid
-                  ? 'text-green-600'
-                  : 'text-gray-400'
+                  ? 'text-primary'
+                  : ''
               }
             >
               영문 + 숫자 포함
@@ -142,8 +175,8 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
         </div>
 
         {/* 비밀번호 확인 */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium">
+        <div>
+          <label className={labelClass}>
             비밀번호 확인
           </label>
           <input
@@ -162,14 +195,15 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
           {signupValues.passwordConfirm &&
             normalizedPassword !==
               normalizedPasswordConfirm && (
-              <p className="text-xs text-red-500">
+              <p className="mt-1 text-xs text-danger">
                 비밀번호가 일치하지 않습니다
               </p>
             )}
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium">닉네임</label>
+        {/* 닉네임 */}
+        <div>
+          <label className={labelClass}>닉네임</label>
           <input
             type="text"
             value={signupValues.nickname}
@@ -183,9 +217,9 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
           />
         </div>
 
-      
-        <div className="space-y-1">
-          <label className="text-sm font-medium">생년월일</label>
+        {/* 생년월일 */}
+        <div>
+          <label className={labelClass}>생년월일</label>
           <input
             type="date"
             value={signupValues.birthday}
@@ -199,15 +233,15 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
           />
         </div>
 
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium">성별</label>
-          <div className="flex gap-4">
+        {/* 성별 */}
+        <div>
+          <label className={labelClass}>성별</label>
+          <div className="flex gap-4 text-sm text-text-secondary">
             {(['male', 'female', 'other'] as const).map(
               (value) => (
                 <label
                   key={value}
-                  className="flex items-center gap-1 text-sm"
+                  className="flex items-center gap-1"
                 >
                   <input
                     type="radio"
@@ -233,14 +267,15 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
         </div>
 
         {errorMsg && (
-          <p className="text-sm text-red-500">{errorMsg}</p>
+          <p className="text-sm text-danger">
+            {errorMsg}
+          </p>
         )}
 
-      
+        {/* 제출 버튼 */}
         <button
           type="button"
           disabled={isPending}
-          className="w-full bg-black text-white py-2 rounded-md disabled:opacity-50"
           onClick={() => {
             if (usernameStatus !== 'available') {
               setErrorMsg(
@@ -282,7 +317,8 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
               {
                 username: signupValues.username,
                 password: normalizedPassword,
-                passwordConfirm: normalizedPasswordConfirm,
+                passwordConfirm:
+                  normalizedPasswordConfirm,
                 nickname: signupValues.nickname,
                 birthday: signupValues.birthday!,
                 gender: signupValues.gender!,
@@ -302,6 +338,14 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
               }
             );
           }}
+          className="
+            w-full rounded-lg
+            bg-primary py-2.5
+            font-medium text-white
+            transition
+            hover:bg-primary-hover/90
+            disabled:opacity-50
+          "
         >
           {isPending ? '가입 중...' : '가입하기'}
         </button>
@@ -310,16 +354,21 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
       {/* 성공 모달 */}
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-80 rounded-lg bg-white p-6 text-center space-y-4">
-            <h2 className="text-lg font-semibold">
-              New Sive 가입을 축하드립니다 !!
+          <div className="w-80 rounded-2xl bg-surface p-6 text-center space-y-4 shadow">
+            <h2 className="text-lg font-semibold text-text-primary">
+              가입을 축하드립니다
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-text-secondary">
               회원가입이 완료되었습니다.
             </p>
 
             <button
-              className="w-full rounded-md bg-black py-2 text-white"
+              className="
+                w-full rounded-lg
+                bg-primary py-2.5
+                text-white
+                hover:bg-primary-hover
+              "
               onClick={() => {
                 setShowSuccessModal(false);
                 onSuccess();

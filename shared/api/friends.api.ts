@@ -7,7 +7,7 @@ export const getFriends = async (): Promise<Friend[]> => {
 
     return res.data.map((item) => ({
         id: item.id,
-        userId: item.friend.id,
+        friendId : item.friend.id,
         username: item.friend.username,
         nickname: item.friend.nickname,
     }));
@@ -19,9 +19,7 @@ export const addFriend = async (friendUserId: number) => {
 };
 
 
-export const sendFriendRequestByNickname = async (nickname: string) => {
-  return apiClient.post('/friend_requests/nickname', { nickname });
-};
+
 
 export const removeFriend = async (friendUserId: number) => {
     return apiClient.delete('/friends', {

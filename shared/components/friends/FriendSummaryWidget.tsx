@@ -29,27 +29,27 @@ export default function FriendSummaryWidget() {
       onClick={() => router.push('/friends')}
       className="
         w-full
-        rounded-xl
-        bg-white
-        p-4
+        rounded-2xl
+        bg-surface
+        p-5
         text-left
         shadow-sm
         transition
-        hover:bg-gray-50
+        hover:bg-surface-muted
       "
     >
-      <h3 className="mb-2 text-sm font-semibold text-gray-900">
+      <h3 className="mb-2 text-sm font-semibold text-text-primary">
         친구
       </h3>
 
-      <div className="space-y-1 text-xs text-gray-600">
+      <div className="space-y-1 text-sm text-text-secondary">
         <p>친구 {totalFriends}명</p>
 
         <p
           className={
             receivedCount > 0
               ? 'font-medium text-primary'
-              : 'text-gray-500'
+              : ''
           }
         >
           받은 요청 {receivedCount}건
