@@ -1,9 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import {useQuery,useMutation,useQueryClient} from '@tanstack/react-query';
-import {getFriends,removeFriend} from '@/shared/api/friends.api';
-import {sendFriendRequestByNickname,getReceivedFriendRequests,getSentFriendRequests,acceptFriendRequest,rejectFriendRequest} from '@/shared/api/friendRequests.api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+
+import { getFriends, removeFriend } from '@/shared/api/friends.api';
+import {
+  sendFriendRequestByNickname,
+  getReceivedFriendRequests,
+  getSentFriendRequests,
+  acceptFriendRequest,
+  rejectFriendRequest,
+} from '@/shared/api/friendRequests.api';
+
 import type { Friend } from '@/shared/types/friend';
 import type { FriendRequest } from '@/shared/types/friendRequest';
 import { ConfirmModal } from '@/shared/components/ConfirmModal';
@@ -12,31 +21,33 @@ type Tab = 'friends' | 'received' | 'sent';
 
 export default function FriendsSidebar() {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const [tab, setTab] = useState<Tab>('friends');
   const [nickname, setNickname] = useState('');
-  const [confirm, setConfirm] = useState<{title: string; description?: string; onConfirm: () => void;} | null>(null);
+  const [confirm, setConfirm] = useState<{
+    title: string;
+    description?: string;
+    onConfirm: () => void;
+  } | null>(null);
 
+  /* ======================
+     Queries
+  ====================== */
 
   const { data: friends = [] } = useQuery<Friend[]>({
     queryKey: ['friends'],
     queryFn: getFriends,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   const { data: received = [] } = useQuery<FriendRequest[]>({
     queryKey: ['friendRequests', 'received'],
     queryFn: getReceivedFriendRequests,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   const { data: sent = [] } = useQuery<FriendRequest[]>({
     queryKey: ['friendRequests', 'sent'],
     queryFn: getSentFriendRequests,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
   });
 
   /* ======================
@@ -90,10 +101,7 @@ export default function FriendsSidebar() {
         <div className="mb-5 flex gap-4 border-b text-sm">
           {[
             { key: 'friends', label: `친구 (${friends.length})` },
-            {
-              key: 'received',
-              label: `받은 요청 (${received.length})`,
-            },
+            { key: 'received', label: `받은 요청 (${received.length})` },
             { key: 'sent', label: '보낸 요청' },
           ].map((t) => (
             <button
@@ -110,36 +118,19 @@ export default function FriendsSidebar() {
           ))}
         </div>
 
-        {/* 친구 */}
+        {/* 친구 목록 */}
         {tab === 'friends' && (
           <>
-           
             <div className="mb-4 flex items-center gap-2">
               <input
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 placeholder="닉네임"
-                className="
-                  flex-1 h-11 rounded-lg
-                  border border-text-secondary/25
-                  bg-surface
-                  px-3 text-sm
-                  transition
-                  focus:outline-none
-                  focus:ring-1 focus:ring-primary/60
-                  hover:border-primary-soft
-                "
+                className="flex-1 h-11 rounded-lg border px-3 text-sm"
               />
               <button
                 onClick={() => sendMutation.mutate(nickname)}
-                className="
-                  h-11 shrink-0 whitespace-nowrap
-                  rounded-lg
-                  bg-primary px-4
-                  text-sm font-medium text-white
-                  transition
-                  hover:bg-primary-hover
-                "
+                className="h-11 rounded-lg bg-primary px-4 text-sm text-white"
               >
                 추가
               </button>
@@ -154,24 +145,36 @@ export default function FriendsSidebar() {
                 {friends.map((f) => (
                   <li
                     key={f.id}
-                    className="flex items-center justify-between text-sm"
+                    className="flex items-center justify-between gap-3 text-sm"
                   >
                     <span>친구 이름 : {f.nickname}</span>
-                    <button
-                      onClick={() =>
-                        setConfirm({
-                          title: '친구 삭제',
-                          description: `${f.nickname}님을 친구 목록에서 삭제하시겠습니까?`,
-                          onConfirm: () => {
-                            deleteFriend.mutate(f.friendId);
-                            setConfirm(null);
-                          },
-                        })
-                      }
-                      className="text-danger hover:underline"
-                    >
-                      삭제
-                    </button>
+
+                    <div className="flex gap-3">
+                      {/* ⭐ 대화하기 */}
+                      <button
+                        onClick={() => router.push(`/chat/${f.friendId}`)}
+                        className="text-primary hover:underline"
+                      >
+                        대화하기
+                      </button>
+
+                      {/* 삭제 */}
+                      <button
+                        onClick={() =>
+                          setConfirm({
+                            title: '친구 삭제',
+                            description: `${f.nickname}님을 친구 목록에서 삭제하시겠습니까?`,
+                            onConfirm: () => {
+                              deleteFriend.mutate(f.friendId);
+                              setConfirm(null);
+                            },
+                          })
+                        }
+                        className="text-danger hover:underline"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -244,9 +247,7 @@ export default function FriendsSidebar() {
             ) : (
               <ul className="space-y-3 text-sm text-text-secondary">
                 {sent.map((r) => (
-                  <li key={r.id}>
-                    {r.friendUser?.nickname}
-                  </li>
+                  <li key={r.id}>{r.friendUser?.nickname}</li>
                 ))}
               </ul>
             )}

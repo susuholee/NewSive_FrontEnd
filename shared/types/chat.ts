@@ -1,7 +1,7 @@
-type ChatMessage = {
+export type ChatMessage = {
   id: number;
-  user: string;
-  message: string;
+  senderId: number;
+  senderNickname: string;
+  content: string;
   createdAt: string;
-  isMe?: boolean;
 };

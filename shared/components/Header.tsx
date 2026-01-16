@@ -39,7 +39,6 @@ export default function Header() {
 
   const NAV_ITEMS = [
     { label: '뉴스', path: '/news', protected: false },
-    { label: '채팅', path: '/chat', protected: true },
     { label: '마이페이지', path: '/mypage', protected: true },
   ];
 
