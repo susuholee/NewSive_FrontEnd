@@ -2,7 +2,8 @@ import { apiClient } from "@/shared/lib/axios";
 import type { FriendRequest } from "../types/friendRequest";
 
 export const sendFriendRequestByNickname = async (nickname: string) => {
-  return apiClient.post('/friend_requests/nickname', { nickname });
+  const res = await apiClient.post('/friend_requests/nickname', { nickname });
+  return res.data;
 };
 
 export const getReceivedFriendRequests = async (): Promise<FriendRequest[]> => {
