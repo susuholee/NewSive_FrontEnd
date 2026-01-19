@@ -5,4 +5,5 @@ export type ChatMessage = {
   content: string | null;
   isDeleted: boolean;
   createdAt: string;
+  editedAt : string | null;
 };
