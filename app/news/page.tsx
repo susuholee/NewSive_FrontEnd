@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import WeatherWidget from "@/shared/components/WeatherWidget";
 import ThumbnailImage from "@/shared/components/ThumbnailImage";
 import { useNewsList } from "../../shared/hooks/useNewsList";
 
@@ -17,7 +16,13 @@ function formatDate(iso: string) {
 }
 
 export default function NewsPage() {
-  const { data: newsList, isLoading, error } = useNewsList();
+  const {
+    data: newsList,
+    isLoading,
+    error,
+    refresh,
+    dataUpdatedAt,
+  } = useNewsList();
 
   const PAGE_SIZE = 5;
   const [page, setPage] = useState(1);
@@ -29,6 +34,11 @@ export default function NewsPage() {
   const end = start + PAGE_SIZE;
 
   const visibleNews = newsList?.slice(start, end) ?? [];
+
+
+  const handleRefresh = async () => {
+    await refresh();
+  };
 
   if (isLoading) {
     return (
@@ -42,8 +52,7 @@ export default function NewsPage() {
               <div className="h-20 w-28 rounded-md bg-gray-200" />
               <div className="flex flex-1 flex-col gap-2">
                 <div className="h-4 w-3/4 rounded bg-gray-200" />
-                <div className="h-3 w-full rounded bg-gray-200">
-                </div>
+                <div className="h-3 w-full rounded bg-gray-200" />
                 <div className="h-3 w-1/2 rounded bg-gray-200" />
               </div>
             </div>
@@ -63,6 +72,30 @@ export default function NewsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
+
+    
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">최신 뉴스</h2>
+
+        <div className="flex items-center gap-3">
+          {dataUpdatedAt > 0 && (
+            <span className="text-xs text-gray-400">
+              마지막 업데이트:{" "}
+              {new Date(dataUpdatedAt).toLocaleTimeString("ko-KR")}
+            </span>
+          )}
+
+
+          <button
+            onClick={handleRefresh}
+            className="flex items-center gap-1 rounded border px-3 py-1 text-sm hover:bg-gray-100"
+          >
+            최신 불러오기
+          </button>
+        </div>
+      </div>
+
+
       <ul className="space-y-4">
         {visibleNews.map((news) => (
           <li
@@ -124,7 +157,6 @@ export default function NewsPage() {
                 {p}
               </button>
             ))}
-
         </div>
       )}
     </main>

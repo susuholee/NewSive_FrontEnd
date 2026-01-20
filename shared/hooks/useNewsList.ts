@@ -1,24 +1,25 @@
-import { useQuery } from "@tanstack/react-query";
-import { mockNews } from "../mock/news";
-import { News } from "../types/news";
-
-// 임시 플래그
-const USE_MOCK = true;
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { NewsList } from '../api/news.api';
 
 export function useNewsList() {
-  return useQuery<News[]>({
-    queryKey: ["news"],
-    queryFn: async () => {
-      if (USE_MOCK) {
-        // 네트워크 흉내
-        await new Promise((r) => setTimeout(r, 300));
-        return mockNews;
-      }
+  const queryClient = useQueryClient();
 
-      const res = await fetch("/api/news");
-      if (!res.ok) throw new Error("뉴스 조회 실패");
-      return res.json();
-    },
-    staleTime: 1000 * 60 * 5,
+
+  const query = useQuery({
+    queryKey: ['news'],
+    queryFn: () => NewsList(false),
+    staleTime: 0,
+    refetchOnWindowFocus: false,
   });
+
+
+  const refresh = async () => {
+    const data = await NewsList(true);         
+    queryClient.setQueryData(['news'], data);  
+  };
+
+  return {
+    ...query,
+    refresh,          
+  };
 }

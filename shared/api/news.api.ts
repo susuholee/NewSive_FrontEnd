@@ -1,10 +1,9 @@
-import { News } from '../types/news';
-import { mapGNewsArticleToNews } from '../mappers/news.mapper';
-import { GNewsResponse } from '../dto/gnews.dto';
-import { apiClient } from '../lib/axios';
+import { apiClient } from "../lib/axios";
+import type { News } from "../types/news";
 
-export async function getNewsList(): Promise<News[]> {
-  const data = await apiClient.get<GNewsResponse>('/api/news');
 
-  return data.data.articles.map(mapGNewsArticleToNews);
-}
+export const NewsList = async (refresh = false): Promise<News[]> => {
+  const url = refresh ? "/news?refresh=true" : "/news";
+  const res = await apiClient.get(url);
+  return res.data;
+};
