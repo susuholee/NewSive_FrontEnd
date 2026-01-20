@@ -1,8 +1,15 @@
 import { apiClient } from "../lib/axios";
 
-export const fetchWeather = async (lat: number, lon: number) => {
+export const getWeather = async (
+  city: string,
+  refresh: boolean = false,
+) => {
   const res = await apiClient.get("/weather", {
-    params: { lat, lon },
+    params: {
+      city,
+      refresh: refresh ? "true" : "false",
+    },
   });
+
   return res.data;
 };
