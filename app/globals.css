@@ -17,6 +17,8 @@
 
   --text-primary: oklch(0% 0 0);
   --text-secondary: oklch(45% 0.01 250);
+
+  --danger: oklch(62% 0.22 25);
 }
 
 @theme inline {
@@ -62,6 +64,8 @@
 
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
+
+    --danger: oklch(62% 0.22 25);
   }
 }
 

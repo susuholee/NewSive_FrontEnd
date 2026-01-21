@@ -1,16 +1,7 @@
 import { apiClient } from '@/shared/lib/axios';
 import type { User } from '../types/user';
-import type { SignupRequest } from '@/shared/types/auth';
 
-export const signup = async (data: SignupRequest) => {
-  try {
-    const res = await apiClient.post('/users', data);
-    return res.data;
-  } catch (error) {
-    console.log("회원가입 요청 오류",error)
-    throw error;
-  }
-}
+
 
 export const getMe = async (): Promise<User> => {
   const res = await apiClient.get<User>('/users/me');
