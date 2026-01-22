@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/lib/axios';
-import type { User } from '../types/user';
+import type { UpdateProfileImageResponse, User } from '../types/user';
 
 
 
@@ -28,6 +28,11 @@ export const checkUsernameAvailability = async (username: string) => {
     params: { username },
   });
   return res.data as { available: boolean };
+};
+
+export const updateProfileImage = async (formData: FormData): Promise<UpdateProfileImageResponse> => {
+  const res = await apiClient.patch<UpdateProfileImageResponse>('/users/me/profile/image', formData);
+  return res.data;
 };
 
 
