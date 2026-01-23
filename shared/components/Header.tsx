@@ -13,7 +13,7 @@ import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
 import { logout as logoutApi } from '../api/auth.api';
 import { ConfirmModal } from './ConfirmModal';
 
-import { getNotifications,getUnreadCount,readNotification} from '@/shared/api/notifications.api';
+import { getNotifications, getUnreadCount, readNotification } from '@/shared/api/notifications.api';
 
 import type { Notification } from '../types/notification';
 import { notificationUIMap } from '@/shared/constants/notificationUI';
@@ -26,9 +26,19 @@ export default function Header() {
   const { user, logout: clearUser } = useAuthStore();
   const { isAuthenticated } = useAuthGuard();
 
-  const openFriendsSidebar = useUIStore((s) => s.openFriendsSidebar);
+
+  const rawOpenFriendsSidebar = useUIStore((s) => s.openFriendsSidebar);
+
 
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const openFriendsSidebarWithAuth = (tab: 'friends' | 'received' | 'sent') => {
+    if (!isAuthenticated) {
+      setShowLoginModal(true);
+      return;
+    }
+    rawOpenFriendsSidebar(tab);
+  };
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -39,11 +49,10 @@ export default function Header() {
 
   const NAV_ITEMS = [
     { label: '뉴스', path: '/news', protected: false },
-    { label: '마이페이지', path: '/mypage', protected: true },
+    { label: '내 정보', path: '/mypage', protected: true },
   ];
 
-  const isActive = (path: string) =>
-    pathname === path || pathname.startsWith(path + '/');
+  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
 
   const handleProtectedClick = (path: string) => {
     if (!isAuthenticated) {
@@ -63,7 +72,6 @@ export default function Header() {
     }
   };
 
-
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -77,38 +85,29 @@ export default function Header() {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-
   useEffect(() => {
     if (!showDropdown || !isAuthenticated || !user) return;
     getNotifications().then(setNotifications);
   }, [showDropdown, isAuthenticated, user]);
 
-
   useEffect(() => {
     if (!showDropdown) return;
 
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () =>
-      document.removeEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showDropdown]);
 
   return (
     <>
       <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link
-            href="/"
-            className="flex items-center gap-2 text-lg font-bold text-primary"
-          >
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-primary">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
@@ -116,16 +115,12 @@ export default function Header() {
             NewSive
           </Link>
 
-      
+   
           <nav className="flex items-center gap-1 rounded-full bg-surface-muted p-1 text-sm">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.path}
-                onClick={() =>
-                  item.protected
-                    ? handleProtectedClick(item.path)
-                    : router.push(item.path)
-                }
+                onClick={() => (item.protected ? handleProtectedClick(item.path) : router.push(item.path))}
                 className={[
                   'rounded-full px-4 py-1.5 transition',
                   isActive(item.path)
@@ -138,7 +133,7 @@ export default function Header() {
             ))}
           </nav>
 
-      
+
           <div className="relative flex items-center gap-3">
             {user ? (
               <>
@@ -151,12 +146,7 @@ export default function Header() {
                     className="relative rounded-full p-2 transition hover:opacity-80"
                     aria-label="알림"
                   >
-                    <Image
-                      src="/icon/bell.jpg"
-                      alt="알림"
-                      width={20}
-                      height={20}
-                    />
+                    <Image src="/icon/bell.jpg" alt="알림" width={20} height={20} />
                     {unreadCount > 0 && (
                       <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                         {unreadCount}
@@ -166,15 +156,11 @@ export default function Header() {
 
                   {showDropdown && (
                     <div className="absolute right-0 top-10 z-50 w-80 rounded-2xl border bg-white shadow-xl">
-                      <div className="border-b px-4 py-3 text-sm font-semibold">
-                        알림
-                      </div>
+                      <div className="border-b px-4 py-3 text-sm font-semibold">알림</div>
 
                       <ul className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 && (
-                          <li className="px-4 py-8 text-center text-sm text-gray-500">
-                            새 알림이 없습니다
-                          </li>
+                          <li className="px-4 py-8 text-center text-sm text-gray-500">새 알림이 없습니다</li>
                         )}
 
                         {notifications.slice(0, 5).map((n) => {
@@ -186,32 +172,25 @@ export default function Header() {
                               onClick={async () => {
                                 if (!n.isRead) {
                                   await readNotification(n.id);
-                                  setUnreadCount((c) =>
-                                    Math.max(c - 1, 0)
-                                  );
+                                  setUnreadCount((c) => Math.max(c - 1, 0));
                                   setNotifications((prev) =>
-                                    prev.map((item) =>
-                                      item.id === n.id
-                                        ? { ...item, isRead: true }
-                                        : item
-                                    )
+                                    prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item)),
                                   );
                                 }
 
                                 setShowDropdown(false);
 
-                              
+                          
                                 if (n.type === 'FRIEND_REQUEST') {
-                                  openFriendsSidebar('received');
+                                  openFriendsSidebarWithAuth('received');
                                   return;
                                 }
 
                                 if (n.type === 'FRIEND_ACCEPTED') {
-                                  openFriendsSidebar('friends');
+                                  openFriendsSidebarWithAuth('friends');
                                   return;
                                 }
 
-                                
                                 if (n.link) {
                                   router.push(n.link);
                                 }
@@ -219,21 +198,11 @@ export default function Header() {
                               className="cursor-pointer px-4 py-3 transition hover:bg-gray-50"
                             >
                               <div className="flex gap-3">
-                                {!n.isRead && (
-                                  <span
-                                    className={`mt-2 h-2 w-2 rounded-full ${ui.dotColor}`}
-                                  />
-                                )}
+                                {!n.isRead && <span className={`mt-2 h-2 w-2 rounded-full ${ui.dotColor}`} />}
                                 <div>
-                                  <span
-                                    className={`text-xs font-medium ${ui.color}`}
-                                  >
-                                    {ui.label}
-                                  </span>
+                                  <span className={`text-xs font-medium ${ui.color}`}>{ui.label}</span>
                                   <p className="text-sm">{n.message}</p>
-                                  <p className="mt-1 text-xs text-gray-400">
-                                    {formatRelativeTime(n.createdAt)}
-                                  </p>
+                                  <p className="mt-1 text-xs text-gray-400">{formatRelativeTime(n.createdAt)}</p>
                                 </div>
                               </div>
                             </li>
@@ -256,7 +225,7 @@ export default function Header() {
                   )}
                 </div>
 
-                {/* User */}
+   
                 <div className="flex items-center gap-2 rounded-full bg-surface-muted px-2 py-1">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                     {user.nickname?.[0]}
@@ -272,10 +241,7 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link
-                  href="/login"
-                  className="text-sm text-text-secondary hover:text-primary"
-                >
+                <Link href="/login" className="text-sm text-text-secondary hover:text-primary">
                   로그인
                 </Link>
                 <Link
@@ -290,9 +256,7 @@ export default function Header() {
         </div>
       </header>
 
-      {showLoginModal && (
-        <LoginRequiredModal onClose={() => setShowLoginModal(false)} />
-      )}
+      {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
 
       {showLogoutModal && (
         <ConfirmModal

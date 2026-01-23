@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { AxiosError } from 'axios';
 import type { SignupRequest } from '@/shared/types/auth';
 import { useSignupMutation } from '@/shared/queries/useSignupMutation';
@@ -12,14 +12,13 @@ type SignupFormProps = {
 
 type UsernameStatus = 'idle' | 'checking' | 'available' | 'unavailable';
 
-const PASSWORD_RULES = {
-  minLength: 8,
-  regex: /^(?=.*[a-zA-Z])(?=.*\d).+$/,
-};
+const PASSWORD_RULES = {minLength: 8, regex: /^(?=.*[a-zA-Z])(?=.*\d).+$/};
 
 const USERNAME_RULE = /^[a-zA-Z0-9]+$/;
-
 const NICKNAME_RULE = /^[가-힣a-zA-Z0-9]{2,10}$/;
+
+
+const DEFAULT_PROFILE_IMAGE = '/images/basic_profile_img.jpg';
 
 export default function SignupForm({ onSuccess }: SignupFormProps) {
   const { mutate, isPending } = useSignupMutation();
@@ -51,7 +50,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
   const passwordConfirmRef = useRef<HTMLInputElement>(null);
   const birthdayRef = useRef<HTMLInputElement>(null);
 
-
   useEffect(() => {
     if (showSuccessModal) document.body.style.overflow = 'hidden';
     else document.body.style.overflow = '';
@@ -70,7 +68,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
 
   const labelClass = 'mb-1 block text-sm text-text-secondary';
 
-
   const normalizedPassword = signupValues.password.trim();
   const normalizedPasswordConfirm = signupValues.passwordConfirm.trim();
 
@@ -80,7 +77,7 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
   const isPasswordMatch =
     normalizedPasswordConfirm && normalizedPassword === normalizedPasswordConfirm;
 
-  const passwordStrength = useMemo(() => {
+  const passwordStrength = (() => {
     let score = 0;
     if (normalizedPassword.length >= 8) score++;
     if (/[a-z]/i.test(normalizedPassword)) score++;
@@ -91,15 +88,11 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     if (score === 2) return { label: '보통', color: 'bg-yellow-400', width: 'w-2/4' };
     if (score === 3) return { label: '강함', color: 'bg-primary-soft', width: 'w-3/4' };
     return { label: '매우 강함', color: 'bg-primary', width: 'w-full' };
-  }, [normalizedPassword]);
+  })();
 
-
-  const isUsernameCheckedAndStillSame = useMemo(() => {
-    return (
-      usernameStatus === 'available' &&
-      checkedUsername === signupValues.username.trim()
-    );
-  }, [usernameStatus, checkedUsername, signupValues.username]);
+  const isUsernameCheckedAndStillSame =
+    usernameStatus === 'available' &&
+    checkedUsername === signupValues.username.trim();
 
   const handleCheckUsername = async () => {
     const username = signupValues.username.trim();
@@ -125,7 +118,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     }
   };
 
-
   const validateStep1 = () => {
     const errors: Record<string, string> = {};
 
@@ -143,11 +135,9 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
       errors.nickname = '닉네임을 입력해주세요';
     } else if (!NICKNAME_RULE.test(nickname)) {
       errors.nickname = '닉네임은 2~10자, 한글/영문/숫자만 가능합니다';
-    }
-    else if (username.toLowerCase() === nickname.toLowerCase()) {
+    } else if (username.toLowerCase() === nickname.toLowerCase()) {
       errors.nickname = '아이디와 닉네임은 같을 수 없습니다';
     }
-
 
     setFieldErrors(errors);
 
@@ -190,7 +180,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     return Object.keys(errors).length === 0;
   };
 
-
   const handleNext = () => {
     let isValid = true;
 
@@ -219,16 +208,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     setStep((prev) => (prev - 1) as 1 | 2 | 3);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      if (step < 3) handleNext();
-      else handleSubmit();
-    }
-  };
-
-
-
   const handleSubmit = () => {
     if (!validateStep3()) {
       setStepErrorMessage('필수 프로필 정보를 입력해주세요');
@@ -245,13 +224,8 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     formData.append('passwordConfirm', normalizedPasswordConfirm);
     formData.append('nickname', trimmedNickname);
 
-    if (signupValues.birthday) {
-      formData.append('birthday', signupValues.birthday);
-    }
-
-    if (signupValues.gender) {
-      formData.append('gender', signupValues.gender);
-    }
+    if (signupValues.birthday) formData.append('birthday', signupValues.birthday);
+    if (signupValues.gender) formData.append('gender', signupValues.gender);
 
     if (profileImage) {
       formData.append('profileImage', profileImage);
@@ -286,36 +260,43 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
         </p>
       </div>
 
-
       {stepErrorMessage && (
         <div className="mb-4 rounded-lg border border-danger/30 bg-danger/5 px-3 py-2">
           <p className="text-sm text-danger">{stepErrorMessage}</p>
         </div>
       )}
 
-      <form className="space-y-6" onKeyDown={handleKeyDown}>
 
-   
+      <form
+        className="space-y-6"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (step < 3) handleNext();
+            else handleSubmit();
+          }
+        }}
+      >
+      
         {step === 1 && (
           <>
             <p className="text-sm text-text-secondary">
-              사용할 아이디와 닉네임을 입력해주세요
+              사용할 아이디와 닉네임을 입력해주세요 (<span className="text-danger">*</span> 필수)
             </p>
 
             <div>
-              <label className={labelClass}>아이디 *</label>
+              <label className={labelClass}>
+                아이디 <span className="text-danger">*</span>
+              </label>
               <div className="flex gap-2">
                 <input
                   ref={usernameRef}
                   value={signupValues.username}
                   onChange={(e) => {
-                    const value = e.target.value;
-
                     setSignupValues((prev) => ({
                       ...prev,
-                      username: value,
+                      username: e.target.value,
                     }));
-
                     setUsernameStatus('idle');
                     setCheckedUsername('');
                   }}
@@ -347,23 +328,23 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>닉네임 *</label>
+              <label className={labelClass}>
+                닉네임 <span className="text-danger">*</span>
+              </label>
               <input
                 ref={nicknameRef}
                 value={signupValues.nickname}
-              onChange={(e) => {
-              setSignupValues((prev) => ({
-                ...prev,
-                nickname: e.target.value,
-              }));
-            }}
-
+                onChange={(e) =>
+                  setSignupValues((prev) => ({
+                    ...prev,
+                    nickname: e.target.value,
+                  }))
+                }
                 className={inputClass}
               />
               {fieldErrors.nickname && (
                 <p className="mt-1 text-xs text-danger">{fieldErrors.nickname}</p>
               )}
-
             </div>
           </>
         )}
@@ -372,11 +353,13 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
         {step === 2 && (
           <>
             <p className="text-sm text-text-secondary">
-              계정을 안전하게 보호할 비밀번호를 설정해주세요
+              계정을 보호할 비밀번호를 설정해주세요 (<span className="text-danger">*</span> 필수)
             </p>
 
             <div>
-              <label className={labelClass}>비밀번호 *</label>
+              <label className={labelClass}>
+                비밀번호 <span className="text-danger">*</span>
+              </label>
               <input
                 ref={passwordRef}
                 type="password"
@@ -390,7 +373,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 className={inputClass}
               />
 
-         
               {normalizedPassword && (
                 <div className="mt-2 space-y-1">
                   <div className="h-2 w-full rounded bg-text-secondary/20 overflow-hidden">
@@ -400,9 +382,7 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                   </div>
                   <p className="text-xs text-text-secondary">
                     비밀번호 강도:{' '}
-                    <span className="font-medium">
-                      {passwordStrength.label}
-                    </span>
+                    <span className="font-medium">{passwordStrength.label}</span>
                   </p>
                 </div>
               )}
@@ -422,7 +402,9 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>비밀번호 확인 *</label>
+              <label className={labelClass}>
+                비밀번호 확인 <span className="text-danger">*</span>
+              </label>
               <input
                 ref={passwordConfirmRef}
                 type="password"
@@ -445,15 +427,17 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
           </>
         )}
 
-     
+
         {step === 3 && (
           <>
             <p className="text-sm text-text-secondary">
-              다른 사람들과 소통하기 위한 정보를 입력해주세요
+              필수 프로필 정보를 입력해주세요 (<span className="text-danger">*</span> 필수 입력)
             </p>
 
             <div>
-              <label className={labelClass}>생년월일 *</label>
+              <label className={labelClass}>
+                생년월일 <span className="text-danger">*</span>
+              </label>
               <input
                 ref={birthdayRef}
                 type="date"
@@ -472,7 +456,9 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>성별 *</label>
+              <label className={labelClass}>
+                성별 <span className="text-danger">*</span>
+              </label>
               <div className="flex gap-4 text-sm">
                 {(['male', 'female', 'other'] as const).map((value) => (
                   <label key={value} className="flex items-center gap-1">
@@ -502,15 +488,21 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>프로필 이미지 (선택)</label>
+              <label className={labelClass}>
+                프로필 이미지 <span className="text-text-secondary">(선택)</span>
+              </label>
+              <p className="mb-3 text-xs text-text-secondary">
+                이미지를 선택하지 않으면 기본 프로필 이미지가 자동으로 제공됩니다.
+              </p>
 
-              <div className="flex items-center gap-4">
-                <div className="relative w-20 h-20 rounded-full overflow-hidden border flex items-center justify-center">
+              <div className="flex items-center gap-6">
+                <div className="relative w-28 h-28 rounded-full overflow-hidden border-2 border-text-secondary/20 flex items-center justify-center bg-text-secondary/5">
                   {previewImage ? (
                     <>
                       <img
                         src={previewImage}
                         className="w-full h-full object-cover"
+                        alt="선택한 프로필 이미지"
                       />
                       <button
                         type="button"
@@ -518,37 +510,55 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                           setPreviewImage(null);
                           setProfileImage(undefined);
                         }}
-                        className="absolute top-0 right-0 w-6 h-6 bg-black/60 text-white rounded-full"
+                        className="absolute top-1 right-1 w-7 h-7 bg-black/60 text-white rounded-full flex items-center justify-center text-sm hover:bg-black/80"
                       >
                         ✕
                       </button>
                     </>
                   ) : (
-                    <span className="text-xs text-text-secondary text-center">
-                      기본 이미지
-                    </span>
+                    <img
+                      src={DEFAULT_PROFILE_IMAGE}
+                      className="w-full h-full object-cover opacity-90"
+                      alt="기본 프로필 이미지"
+                    />
                   )}
                 </div>
 
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                      const file = e.target.files[0];
-                      setProfileImage(file);
-                      setPreviewImage(URL.createObjectURL(file));
-                    }
-                  }}
-                  className={inputClass}
-                />
+                <div className="flex-1 space-y-2">
+                  <label
+                    htmlFor="profileImageInput"
+                    className="inline-block cursor-pointer rounded-lg border px-4 py-2 text-sm text-text-secondary hover:bg-text-secondary/10"
+                  >
+                    파일 선택
+                  </label>
+                  <input
+                    id="profileImageInput"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        const file = e.target.files[0];
+                        setProfileImage(file);
+                        setPreviewImage(URL.createObjectURL(file));
+                      }
+                    }}
+                    className="hidden"
+                  />
+
+                  <p className="text-xs text-text-secondary">
+                    JPG, PNG 파일을 업로드할 수 있어요.
+                  </p>
+                </div>
               </div>
             </div>
+
+            <p className="text-xs text-text-secondary text-center">
+              * 아이디, 닉네임, 생년월일, 성별은 필수 입력 항목입니다.
+            </p>
           </>
         )}
 
-   
-
+     
         <div className="flex gap-3 pt-4">
           {step > 1 && (
             <button
@@ -582,8 +592,6 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
           )}
         </div>
       </form>
-
-
 
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

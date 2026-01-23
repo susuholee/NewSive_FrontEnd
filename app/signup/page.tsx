@@ -16,7 +16,7 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-center justify-center bg-background text-text-primary px-4">
       <div className="w-full max-w-sm rounded-2xl bg-surface p-7 shadow-sm">
 
-        {/* 헤더 영역 */}
+    
         <div className="mb-6 space-y-1">
           <h1 className="text-xl font-semibold tracking-tight">
             회원가입

@@ -1,5 +1,6 @@
 import { apiClient } from "@/shared/lib/axios";
 import type { FriendRequest } from "../types/friendRequest";
+import { FriendSearchResult } from "../types/friendSearch";
 
 export const sendFriendRequestByNickname = async (nickname: string) => {
   const res = await apiClient.post('/friend_requests/nickname', { nickname });
@@ -24,5 +25,12 @@ export const acceptFriendRequest = async (requestId: number) => {
 
 export const rejectFriendRequest = async (requestId: number) => {
   const res = await apiClient.patch(`/friend_requests/${requestId}/reject`);
+  return res.data;
+};
+
+export const searchUserByNickname = async ( nickname: string): Promise<FriendSearchResult[]> => {
+  const res = await apiClient.get("/friend_requests/search", {
+    params: { nickname },
+  });
   return res.data;
 };

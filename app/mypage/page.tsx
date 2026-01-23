@@ -132,7 +132,7 @@ export default function MyPage() {
     }
   };
 
-  /* ---------- 비밀번호 ---------- */
+
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !newPasswordConfirm) {
       openInfoModal("오류", "모든 비밀번호를 입력해주세요.");
@@ -212,7 +212,8 @@ export default function MyPage() {
                 >
                   {user?.profileImgUrl ? (
                     <img
-                      src={user.profileImgUrl}
+                      key={`${user.profileImgUrl}`}
+                       src={`${user.profileImgUrl}`}
                       alt="프로필"
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
