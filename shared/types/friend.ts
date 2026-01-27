@@ -3,6 +3,7 @@ export type Friend = {
   friendId: number;   
   username: string;
   nickname: string;
+  profileImgUrl?: string;  
 };
 
 
@@ -14,5 +15,6 @@ export type FriendApiResponse = {
     id: number;
     username: string;
     nickname: string;
+    profileImgUrl?: string;  
   };
 };

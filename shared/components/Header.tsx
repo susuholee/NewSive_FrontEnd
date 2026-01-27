@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 
 import { useAuthStore } from '../store/authStore';
-import { useUIStore } from '../store/uiStore';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
+import { useQueryClient } from '@tanstack/react-query';
 
 import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
 import { logout as logoutApi } from '../api/auth.api';
@@ -21,24 +21,17 @@ import { formatRelativeTime } from '../utils/time';
 
 export default function Header() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const pathname = usePathname();
 
   const { user, logout: clearUser } = useAuthStore();
   const { isAuthenticated } = useAuthGuard();
 
 
-  const rawOpenFriendsSidebar = useUIStore((s) => s.openFriendsSidebar);
+
 
 
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const openFriendsSidebarWithAuth = (tab: 'friends' | 'received' | 'sent') => {
-    if (!isAuthenticated) {
-      setShowLoginModal(true);
-      return;
-    }
-    rawOpenFriendsSidebar(tab);
-  };
-
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [unreadCount, setUnreadCount] = useState(0);
@@ -67,6 +60,7 @@ export default function Header() {
       await logoutApi();
     } finally {
       clearUser();
+      queryClient.clear();
       setShowLogoutModal(false);
       router.replace('/login');
     }
@@ -180,20 +174,6 @@ export default function Header() {
 
                                 setShowDropdown(false);
 
-                          
-                                if (n.type === 'FRIEND_REQUEST') {
-                                  openFriendsSidebarWithAuth('received');
-                                  return;
-                                }
-
-                                if (n.type === 'FRIEND_ACCEPTED') {
-                                  openFriendsSidebarWithAuth('friends');
-                                  return;
-                                }
-
-                                if (n.link) {
-                                  router.push(n.link);
-                                }
                               }}
                               className="cursor-pointer px-4 py-3 transition hover:bg-gray-50"
                             >

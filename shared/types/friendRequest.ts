@@ -7,11 +7,13 @@ export type FriendRequest = {
     id: number;
     username: string;
     nickname: string;
+    profileImgUrl?: string;
   };
 
   friendUser?: {
     id: number;
     username: string;
     nickname: string;
+    profileImgUrl?: string;
   };
 };

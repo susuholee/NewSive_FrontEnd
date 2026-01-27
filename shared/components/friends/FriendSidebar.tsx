@@ -1,19 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
+import FriendAuthGuard from '@/shared/components/friends/FriendAuthGuard';
+import { useAuthStore } from '@/shared/store/authStore';
 
 import { getFriends, removeFriend } from '@/shared/api/friends.api';
 import {
-  sendFriendRequestByNickname,
+  sendFriendRequest,
   getReceivedFriendRequests,
   getSentFriendRequests,
   acceptFriendRequest,
   rejectFriendRequest,
+  cancelFriendRequest,
   searchUserByNickname,
 } from '@/shared/api/friendRequests.api';
 
@@ -24,17 +25,18 @@ import type { FriendSearchResult } from '@/shared/types/friendSearch';
 import { ConfirmModal } from '@/shared/components/ConfirmModal';
 
 type Tab = 'friends' | 'received' | 'sent';
+type Relation = 'FRIEND' | 'SENT' | 'RECEIVED' | 'NONE';
 
 export default function FriendsSidebar() {
   const queryClient = useQueryClient();
   const router = useRouter();
 
-  const { isAuthenticated } = useAuthGuard();
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user } = useAuthStore();
 
   const [tab, setTab] = useState<Tab>('friends');
   const [nickname, setNickname] = useState('');
   const [searchResult, setSearchResult] = useState<FriendSearchResult[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const [confirm, setConfirm] = useState<{
     title: string;
@@ -42,321 +44,416 @@ export default function FriendsSidebar() {
     onConfirm: () => void;
   } | null>(null);
 
-  /* ======================
-     Queries (로그인일 때만 호출)
-  ====================== */
+  /* ===================== QUERIES ===================== */
 
   const { data: friends = [] } = useQuery<Friend[]>({
     queryKey: ['friends'],
     queryFn: getFriends,
-    enabled: isAuthenticated, // ✅ 추가
+    enabled: !!user,
   });
 
   const { data: received = [] } = useQuery<FriendRequest[]>({
     queryKey: ['friendRequests', 'received'],
     queryFn: getReceivedFriendRequests,
-    enabled: isAuthenticated, // ✅ 추가
+    enabled: !!user,
   });
 
   const { data: sent = [] } = useQuery<FriendRequest[]>({
     queryKey: ['friendRequests', 'sent'],
     queryFn: getSentFriendRequests,
-    enabled: isAuthenticated, // ✅ 추가
+    enabled: !!user,
   });
 
-  /* ======================
-     Mutations
-  ====================== */
+  /* ===================== TAB CHANGE FETCH ===================== */
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (tab === 'friends') {
+      queryClient.invalidateQueries({ queryKey: ['friends'] });
+    }
+
+    if (tab === 'received') {
+      queryClient.invalidateQueries({ queryKey: ['friendRequests', 'received'] });
+    }
+
+    if (tab === 'sent') {
+      queryClient.invalidateQueries({ queryKey: ['friendRequests', 'sent'] });
+    }
+  }, [tab, user, queryClient]);
+
+
+  const getRelation = (userId: number): Relation => {
+    if (friends.some((f) => f.friendId === userId)) {
+      return 'FRIEND';
+    }
+
+    if (sent.some((r) => r.friendUser?.id === userId)) {
+      return 'SENT';
+    }
+
+    if (received.some((r) => r.user?.id === userId)) {
+      return 'RECEIVED';
+    }
+
+    return 'NONE';
+  };
+
+  /* ===================== MUTATIONS ===================== */
 
   const searchMutation = useMutation({
     mutationFn: searchUserByNickname,
-    onSuccess: (data) => setSearchResult(data),
+    onSuccess: (data) => {
+      setSearchResult(data);
+      setHasSearched(true);
+    },
   });
 
   const sendMutation = useMutation({
-    mutationFn: sendFriendRequestByNickname,
+    mutationFn: sendFriendRequest,
+    retry: false,
     onSuccess: async () => {
       setNickname('');
       setSearchResult([]);
-      await queryClient.refetchQueries({ queryKey: ['friendRequests', 'sent'] });
+      setHasSearched(false);
+      await queryClient.invalidateQueries({ queryKey: ['friendRequests', 'sent'] });
     },
   });
 
   const deleteFriend = useMutation({
     mutationFn: removeFriend,
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['friends'] });
+      await queryClient.invalidateQueries({ queryKey: ['friends'] });
     },
   });
 
   const accept = useMutation({
     mutationFn: acceptFriendRequest,
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['friends'] });
-      await queryClient.refetchQueries({ queryKey: ['friendRequests', 'received'] });
+      await queryClient.invalidateQueries({ queryKey: ['friends'] });
+      await queryClient.invalidateQueries({ queryKey: ['friendRequests', 'received'] });
     },
   });
 
   const reject = useMutation({
     mutationFn: rejectFriendRequest,
     onSuccess: async () => {
-      await queryClient.refetchQueries({ queryKey: ['friendRequests', 'received'] });
+      await queryClient.invalidateQueries({ queryKey: ['friendRequests', 'received'] });
     },
   });
 
-  const requireLogin = () => {
-    setShowLoginModal(true);
+  const cancel = useMutation({
+    mutationFn: cancelFriendRequest,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['friendRequests', 'sent'] });
+    },
+  });
+
+  const handleSearch = () => {
+    const keyword = nickname.trim();
+    if (!keyword) return;
+    searchMutation.mutate(keyword);
   };
 
+  /* ===================== UI ===================== */
+
   return (
-    <>
-      <div className="rounded-2xl bg-surface p-6 shadow-sm">
-        <div className="mb-5 flex gap-4 border-b text-sm">
-          {[
-            { key: 'friends', label: `친구 (${friends.length})` },
-            { key: 'received', label: `받은 요청 (${received.length})` },
-            { key: 'sent', label: '보낸 요청' },
-          ].map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key as Tab)}
-              className={`pb-2 transition ${
-                tab === t.key
-                  ? 'border-b-2 border-primary font-semibold text-primary'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+    <FriendAuthGuard>
+      <>
+        <div className="rounded-2xl bg-white p-5 shadow-md">
+          {/* Tabs */}
+          <div className="mb-4 flex gap-6 border-b text-sm font-medium">
+            {[
+              { key: 'friends', label: `친구 ${friends.length}` },
+              { key: 'received', label: `받은 요청 ${received.length}` },
+              { key: 'sent', label: `보낸 요청 ${sent.length}` },
+            ].map((t) => (
+              <button
+                key={t.key}
+                onClick={() => {
+                  setTab(t.key as Tab);
+                  setNickname('');
+                  setSearchResult([]);
+                  setHasSearched(false);
+                }}
+                className={`relative pb-3 ${
+                  tab === t.key ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {t.label}
+                {tab === t.key && (
+                  <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-primary" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* ================= FRIENDS TAB ================= */}
+          {tab === 'friends' && (
+            <>
+              {/* 검색 */}
+              <div className="mb-5 flex gap-2">
+                <input
+                  value={nickname}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setNickname(v);
+                    if (v.trim() === '') {
+                      setSearchResult([]);
+                      setHasSearched(false);
+                    }
+                  }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="닉네임으로 검색"
+                  className="flex-1 h-11 rounded-xl border bg-gray-50 px-4 text-sm"
+                />
+                <button
+                  onClick={handleSearch}
+                  className="h-11 w-20 rounded-xl bg-primary text-white text-sm"
+                >
+                  검색
+                </button>
+              </div>
+
+              {/* 검색 결과 */}
+              {hasSearched && (
+                <div className="mb-6 space-y-3 border-b pb-4">
+                  {searchResult.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-gray-400">
+                      검색 결과가 없습니다.
+                    </p>
+                  ) : (
+                    searchResult
+                      .filter((u) => u.id !== user?.id) 
+                      .map((u) => {
+                        const relation = getRelation(u.id);
+
+                        return (
+                          <div
+                            key={u.id}
+                            className="flex justify-between  rounded-xl border p-3"
+                          >
+                            <div className="flex gap-3">
+                              <img
+                                src={u.profileImgUrl || '/default-avatar.png'}
+                                className="h-10 w-10 rounded-full"
+                              />
+                              <div>
+                                <p className="font-medium">{u.nickname}</p>
+                                <p className="text-xs text-gray-400">{u.username}</p>
+                              </div>
+                            </div>
+
+                         {relation === 'FRIEND' && (
+                          <span className="px-3 py-1  h-8 flex  items-center rounded-full text-xs bg-amber-200 text-black">
+                            이미 친구
+                          </span>
+                        )}
+
+                            {relation === 'SENT' && (
+                              <span className="text-xs text-gray-400">요청 보냄</span>
+                            )}
+
+                            {relation === 'RECEIVED' && (
+                              <button
+                                onClick={() => {
+                                  const req = received.find(
+                                    (r) => r.user?.id === u.id
+                                  );
+                                  if (!req) return;
+                                  setConfirm({
+                                    title: '친구 요청 수락',
+                                    onConfirm: () => {
+                                      accept.mutate(req.id);
+                                      setConfirm(null);
+                                    },
+                                  });
+                                }}
+                                className="bg-primary text-white px-3 py-1 rounded-full text-xs"
+                              >
+                                수락
+                              </button>
+                            )}
+
+                            {relation === 'NONE' && (
+                              <button
+                                onClick={() => sendMutation.mutate(u.id)}
+                                className="bg-primary text-white px-3 py-1 rounded-full text-xs"
+                              >
+                                친구 추가
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              )}
+
+              {/* 친구 목록 */}
+              {friends.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-400">
+                  아직 친구가 없습니다.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {friends.map((f) => (
+                    <li
+                      key={f.id}
+                      className="flex justify-between rounded-xl border p-3"
+                    >
+                      <div className="flex gap-3">
+                        <img
+                          src={f.profileImgUrl || '/default-avatar.png'}
+                          className="h-9 w-9 rounded-full"
+                        />
+                        <span>{f.nickname}</span>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => router.push(`/chat/${f.friendId}`)}
+                          className="text-primary text-xs"
+                        >
+                          대화
+                        </button>
+                        <button
+                          onClick={() =>
+                            setConfirm({
+                              title: '친구 삭제',
+                              description: `${f.nickname}님을 삭제할까요?`,
+                              onConfirm: () => {
+                                deleteFriend.mutate(f.friendId);
+                                setConfirm(null);
+                              },
+                            })
+                          }
+                          className="text-red-500 text-xs"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+
+          {/* RECEIVED TAB */}
+          {tab === 'received' && (
+            <>
+              {received.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-400">
+                  받은 요청이 없습니다.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {received.map((r) => (
+                    <li key={r.id} className="flex gap-3 rounded-xl border p-3">
+                      <img
+                        src={r.user?.profileImgUrl || '/default-avatar.png'}
+                        className="h-10 w-10 rounded-full"
+                      />
+
+                      <div className="flex-1">
+                        <p>{r.user?.nickname}</p>
+                        <p className="text-sm text-gray-400">{r.user?.username}</p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            setConfirm({
+                              title: '요청 수락',
+                              onConfirm: () => {
+                                accept.mutate(r.id);
+                                setConfirm(null);
+                              },
+                            })
+                          }
+                          className="bg-primary text-white px-3 py-1 text-xs rounded-lg"
+                        >
+                          수락
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            setConfirm({
+                              title: '요청 거절',
+                              onConfirm: () => {
+                                reject.mutate(r.id);
+                                setConfirm(null);
+                              },
+                            })
+                          }
+                          className="bg-gray-100 px-3 py-1 text-xs rounded-lg"
+                        >
+                          거절
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+
+          {/* SENT TAB */}
+          {tab === 'sent' && (
+            <>
+              {sent.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-400">
+                  보낸 요청이 없습니다.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {sent.map((r) => (
+                    <li key={r.id} className="flex gap-3 rounded-xl border p-3">
+                      <img
+                        src={r.friendUser?.profileImgUrl || '/default-avatar.png'}
+                        className="h-10 w-10 rounded-full"
+                      />
+
+                      <div className="flex-1">
+                        <p>{r.friendUser?.nickname}</p>
+                        <p className="text-sm text-gray-400">
+                          {r.friendUser?.username}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          setConfirm({
+                            title: '요청 취소',
+                            description: `${r.friendUser?.nickname}님에게 보낸 요청을 취소할까요?`,
+                            onConfirm: () => {
+                              cancel.mutate(r.id);
+                              setConfirm(null);
+                            },
+                          })
+                        }
+                        className="text-red-500 text-xs"
+                      >
+                        취소
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
         </div>
 
-   
-        {tab === 'friends' && (
-          <>
-            <div className="mb-4 flex items-center gap-2">
-              <input
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder={isAuthenticated ? '닉네임으로 친구 검색' : '로그인 후 친구 검색 가능'}
-                disabled={!isAuthenticated}
-                className="flex-1 h-11 rounded-lg border px-3 text-sm disabled:cursor-not-allowed disabled:bg-gray-100"
-              />
-              <button
-                disabled={!isAuthenticated}
-                onClick={() => {
-                  if (!isAuthenticated) return requireLogin();
-                  searchMutation.mutate(nickname);
-                }}
-                className="h-11 rounded-lg bg-primary px-4 text-sm text-white disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                검색
-              </button>
-            </div>
-
-          
-            {searchResult.length > 0 && (
-              <div className="mb-6 space-y-3 border-b pb-4">
-                {searchResult.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between rounded-lg border p-3">
-                    {/* 프로필 */}
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={u.profileImgUrl || '/default-avatar.png'}
-                        className="h-10 w-10 rounded-full object-cover"
-                        alt="profile"
-                      />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{u.nickname}</span>
-                        <span className="text-xs text-text-secondary">@{u.username}</span>
-                      </div>
-                    </div>
-
-                    {/* 상태 버튼 */}
-                    {u.relation === 'FRIEND' && (
-                      <span className="text-xs text-text-secondary">이미 친구</span>
-                    )}
-
-                    {u.relation === 'SENT' && (
-                      <span className="text-xs text-text-secondary">요청 보냄</span>
-                    )}
-
-                    {u.relation === 'RECEIVED' && (
-                      <button
-                        onClick={() => {
-                          if (!isAuthenticated) return requireLogin();
-
-                          const req = received.find((r) => r.user?.id === u.id);
-                          if (!req) return;
-
-                          setConfirm({
-                            title: '친구 요청 수락',
-                            description: `${u.nickname}님의 친구 요청을 수락하시겠습니까?`,
-                            onConfirm: () => {
-                              accept.mutate(req.id);
-                              setConfirm(null);
-                            },
-                          });
-                        }}
-                        className="rounded-md bg-primary px-3 py-1 text-xs text-white"
-                      >
-                        요청 수락
-                      </button>
-                    )}
-
-                    {u.relation === 'NONE' && (
-                      <button
-                        onClick={() => {
-                          if (!isAuthenticated) return requireLogin();
-                          sendMutation.mutate(u.nickname);
-                        }}
-                        className="rounded-md bg-primary px-3 py-1 text-xs text-white"
-                      >
-                        친구 추가
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-  
-            {isAuthenticated && friends.length === 0 ? (
-              <p className="text-sm text-text-secondary">친구가 없습니다.</p>
-            ) : !isAuthenticated ? (
-              <p className="text-sm text-text-secondary">
-                친구 기능은 로그인 후 사용할 수 있어요.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {friends.map((f) => (
-                  <li
-                    key={f.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm"
-                  >
-                    <span>{f.nickname}</span>
-
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => router.push(`/chat/${f.friendId}`)}
-                        className="text-primary hover:underline"
-                      >
-                        대화하기
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setConfirm({
-                            title: '친구 삭제',
-                            description: `${f.nickname}님을 친구 목록에서 삭제하시겠습니까?`,
-                            onConfirm: () => {
-                              deleteFriend.mutate(f.friendId);
-                              setConfirm(null);
-                            },
-                          })
-                        }
-                        className="text-danger hover:underline"
-                      >
-                        삭제
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
+        {confirm && (
+          <ConfirmModal
+            title={confirm.title}
+            description={confirm.description}
+            onConfirm={confirm.onConfirm}
+            onCancel={() => setConfirm(null)}
+          />
         )}
-
-        {tab === 'received' && (
-          <>
-            {!isAuthenticated ? (
-              <p className="text-sm text-text-secondary">
-                받은 요청 확인은 로그인 후 가능합니다.
-              </p>
-            ) : received.length === 0 ? (
-              <p className="text-sm text-text-secondary">받은 요청이 없습니다.</p>
-            ) : (
-              <ul className="space-y-3">
-                {received.map((r) => (
-                  <li
-                    key={r.id}
-                    className="flex items-center justify-between rounded-lg border p-3 text-sm"
-                  >
-                    <span>{r.user?.nickname}</span>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() =>
-                          setConfirm({
-                            title: '친구 요청 수락',
-                            description: `${r.user?.nickname}님의 친구 요청을 수락하시겠습니까?`,
-                            onConfirm: () => {
-                              accept.mutate(r.id);
-                              setConfirm(null);
-                            },
-                          })
-                        }
-                        className="text-primary hover:underline"
-                      >
-                        수락
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          setConfirm({
-                            title: '친구 요청 거절',
-                            description: `${r.user?.nickname}님의 친구 요청을 거절하시겠습니까?`,
-                            onConfirm: () => {
-                              reject.mutate(r.id);
-                              setConfirm(null);
-                            },
-                          })
-                        }
-                        className="text-text-secondary hover:underline"
-                      >
-                        거절
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-
-        {/* ================= 보낸 요청 ================= */}
-        {tab === 'sent' && (
-          <>
-            {!isAuthenticated ? (
-              <p className="text-sm text-text-secondary">
-                보낸 요청 확인은 로그인 후 가능합니다.
-              </p>
-            ) : sent.length === 0 ? (
-              <p className="text-sm text-text-secondary">보낸 요청이 없습니다.</p>
-            ) : (
-              <ul className="space-y-3 text-sm text-text-secondary">
-                {sent.map((r) => (
-                  <li key={r.id} className="rounded-lg border p-3">
-                    {r.friendUser?.nickname}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </div>
-
-      {confirm && (
-        <ConfirmModal
-          title={confirm.title}
-          description={confirm.description}
-          onConfirm={confirm.onConfirm}
-          onCancel={() => setConfirm(null)}
-        />
-      )}
-
-      {showLoginModal && (
-        <LoginRequiredModal onClose={() => setShowLoginModal(false)} />
-      )}
-    </>
+      </>
+    </FriendAuthGuard>
   );
 }

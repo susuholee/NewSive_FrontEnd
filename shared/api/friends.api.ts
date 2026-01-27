@@ -1,21 +1,16 @@
 import { apiClient } from '@/shared/lib/axios';
-import type { Friend, FriendApiResponse } from '../types/friend';
+import type { Friend } from '../types/friend';
 
 
 export const getFriends = async (): Promise<Friend[]> => {
-    const res = await apiClient.get<FriendApiResponse[]>('/friends');
-
-    return res.data.map((item) => ({
-        id: item.id,
-        friendId : item.friend.id,
-        username: item.friend.username,
-        nickname: item.friend.nickname,
-    }));
+    const res = await apiClient.get<Friend[]>('/friends');
+    return res.data;
 };
 
 
 export const addFriend = async (friendUserId: number) => {
-    return apiClient.post('/friends', { friendUserId });
+    const res = await apiClient.post('/friends', { friendUserId });
+    return res.data;
 };
 
 

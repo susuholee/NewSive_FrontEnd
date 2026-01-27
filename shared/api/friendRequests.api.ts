@@ -2,8 +2,8 @@ import { apiClient } from "@/shared/lib/axios";
 import type { FriendRequest } from "../types/friendRequest";
 import { FriendSearchResult } from "../types/friendSearch";
 
-export const sendFriendRequestByNickname = async (nickname: string) => {
-  const res = await apiClient.post('/friend_requests/nickname', { nickname });
+export const sendFriendRequest = async (friendUserId: number) => {
+  const res = await apiClient.post('/friend_requests', { friendUserId});
   return res.data;
 };
 
@@ -32,5 +32,11 @@ export const searchUserByNickname = async ( nickname: string): Promise<FriendSea
   const res = await apiClient.get("/friend_requests/search", {
     params: { nickname },
   });
+  return res.data;
+
+};
+
+export const cancelFriendRequest = async (requestId: number) => {
+  const res = await apiClient.delete(`/friend_requests/${requestId}/cancel`);
   return res.data;
 };

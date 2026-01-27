@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { login } from '@/shared/api/auth.api';
 import { useAuthStore } from '@/shared/store/authStore';
+import { useFriendStore } from '@/shared/store/useFriendStore';
+import { useQueryClient } from '@tanstack/react-query';
+
 import Link from 'next/link';
 import axios from 'axios';
 
 export default function LoginPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, login: setLogin } = useAuthStore();
 
   const [username, setUsername] = useState('');
@@ -22,21 +26,26 @@ export default function LoginPage() {
     }
   }, [user, router]);
 
-  const loginMutation = useMutation({
-    mutationFn: login,
-    onSuccess: (data) => {
-      setLogin(data.user);
-    },
-    onError: (error) => {
-      if (axios.isAxiosError(error)) {
-        setErrorMsg(
-          error.response?.data?.message ??
-            '아이디 또는 비밀번호가 올바르지 않습니다.'
-        );
-      }
-    },
-  });
+const loginMutation = useMutation({
+  mutationFn: login,
+  onSuccess: (data) => {
+    useFriendStore.getState().reset();
 
+   
+    queryClient.clear();
+
+   
+    setLogin(data.user);
+  },
+  onError: (error) => {
+    if (axios.isAxiosError(error)) {
+      setErrorMsg(
+        error.response?.data?.message ??
+          '아이디 또는 비밀번호가 올바르지 않습니다.'
+      );
+    }
+  },
+});
   const handleLogin = () => {
     if (!username || !password) {
       setErrorMsg('아이디와 비밀번호를 입력해주세요.');

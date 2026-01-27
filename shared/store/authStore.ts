@@ -1,10 +1,13 @@
 import { create } from 'zustand';
-import type { User } from '@/shared/types/user';
+import type { LoginResponse } from '@/shared/types/login';
+import { useFriendStore } from './useFriendStore';
+
+type LoginUser = LoginResponse["user"];
 
 type AuthState = {
-  user: User | null;
-  login: (user: User) => void;
-  updateUser: (partial: Partial<User>) => void;
+  user: LoginUser | null;
+  login: (user: LoginUser) => void;
+  updateUser: (partial: Partial<LoginUser>) => void;
   logout: () => void;
 };
 
@@ -21,8 +24,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       user: state.user ? { ...state.user, ...partial } : state.user,
     })),
 
-  logout: () =>
+  logout: () => {
+    useFriendStore.getState().reset();
+
+
     set({
       user: null,
-    }),
+    });
+  },
 }));
