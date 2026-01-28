@@ -20,7 +20,7 @@ export default function NewsPage() {
     data: newsList,
     isLoading,
     error,
-    refresh,
+    refetch,
     dataUpdatedAt,
   } = useNewsList();
 
@@ -34,11 +34,6 @@ export default function NewsPage() {
   const end = start + PAGE_SIZE;
 
   const visibleNews = newsList?.slice(start, end) ?? [];
-
-
-  const handleRefresh = async () => {
-    await refresh();
-  };
 
   if (isLoading) {
     return (
@@ -73,7 +68,7 @@ export default function NewsPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
 
-    
+      {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">최신 뉴스</h2>
 
@@ -85,17 +80,16 @@ export default function NewsPage() {
             </span>
           )}
 
-
           <button
-            onClick={handleRefresh}
+            onClick={() => refetch()}
             className="flex items-center gap-1 rounded border px-3 py-1 text-sm hover:bg-gray-100"
           >
-            최신 불러오기
+            새로고침
           </button>
         </div>
       </div>
 
-
+      {/* 뉴스 리스트 */}
       <ul className="space-y-4">
         {visibleNews.map((news) => (
           <li
@@ -139,7 +133,7 @@ export default function NewsPage() {
         ))}
       </ul>
 
-
+      {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className="mt-8 flex justify-center gap-1">
           {Array.from({ length: totalPages }, (_, i) => i + 1)

@@ -21,3 +21,8 @@ export const readAllNotifications = async () => {
   const res = await apiClient.patch('/notifications/read_all');
   return res.data;
 };
+
+export const deleteReadNotifications = async () => {
+  const res = await apiClient.delete('/notifications/read');
+  return res.data;
+};

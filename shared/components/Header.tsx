@@ -4,16 +4,21 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { useAuthStore } from '../store/authStore';
 import { useAuthGuard } from '@/shared/hooks/useAuthGuard';
-import { useQueryClient } from '@tanstack/react-query';
 
 import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
 import { logout as logoutApi } from '../api/auth.api';
 import { ConfirmModal } from './ConfirmModal';
 
-import { getNotifications, getUnreadCount, readNotification } from '@/shared/api/notifications.api';
+import {
+  getNotifications,
+  getUnreadCount,
+  readNotification,
+  deleteReadNotifications,
+} from '@/shared/api/notifications.api';
 
 import type { Notification } from '../types/notification';
 import { notificationUIMap } from '@/shared/constants/notificationUI';
@@ -21,15 +26,11 @@ import { formatRelativeTime } from '../utils/time';
 
 export default function Header() {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   const { user, logout: clearUser } = useAuthStore();
   const { isAuthenticated } = useAuthGuard();
-
-
-
-
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -45,7 +46,8 @@ export default function Header() {
     { label: '내 정보', path: '/mypage', protected: true },
   ];
 
-  const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/');
+  const isActive = (path: string) =>
+    pathname === path || pathname.startsWith(path + '/');
 
   const handleProtectedClick = (path: string) => {
     if (!isAuthenticated) {
@@ -66,23 +68,32 @@ export default function Header() {
     }
   };
 
+
+  const fetchUnread = async () => {
+    const res = await getUnreadCount();
+    setUnreadCount(res.unreadCount);
+  };
+
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    const fetchUnread = async () => {
-      const res = await getUnreadCount();
-      setUnreadCount(res.unreadCount);
-    };
 
     fetchUnread();
     const interval = setInterval(fetchUnread, 15000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
+ 
+  const fetchNotifications = async () => {
+    const data = await getNotifications();
+    setNotifications(data);
+  };
+
   useEffect(() => {
     if (!showDropdown || !isAuthenticated || !user) return;
-    getNotifications().then(setNotifications);
+    fetchNotifications();
   }, [showDropdown, isAuthenticated, user]);
+
+  /* ================= 바깥 클릭 ================= */
 
   useEffect(() => {
     if (!showDropdown) return;
@@ -94,13 +105,17 @@ export default function Header() {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutside);
   }, [showDropdown]);
+
+  const hasReadNotifications = notifications.some((n) => n.isRead);
 
   return (
     <>
       <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+          {/* 로고 */}
           <Link href="/" className="flex items-center gap-2 text-lg font-bold text-primary">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -109,12 +124,16 @@ export default function Header() {
             NewSive
           </Link>
 
-   
+          {/* 네비 */}
           <nav className="flex items-center gap-1 rounded-full bg-surface-muted p-1 text-sm">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.path}
-                onClick={() => (item.protected ? handleProtectedClick(item.path) : router.push(item.path))}
+                onClick={() =>
+                  item.protected
+                    ? handleProtectedClick(item.path)
+                    : router.push(item.path)
+                }
                 className={[
                   'rounded-full px-4 py-1.5 transition',
                   isActive(item.path)
@@ -127,18 +146,18 @@ export default function Header() {
             ))}
           </nav>
 
-
+          {/* 우측 */}
           <div className="relative flex items-center gap-3">
             {user ? (
               <>
+                {/* 🔔 알림 */}
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setShowDropdown((prev) => !prev);
                     }}
-                    className="relative rounded-full p-2 transition hover:opacity-80"
-                    aria-label="알림"
+                    className="relative rounded-full p-2 transition hover:bg-gray-100"
                   >
                     <Image src="/icon/bell.jpg" alt="알림" width={20} height={20} />
                     {unreadCount > 0 && (
@@ -149,12 +168,48 @@ export default function Header() {
                   </button>
 
                   {showDropdown && (
-                    <div className="absolute right-0 top-10 z-50 w-80 rounded-2xl border bg-white shadow-xl">
-                      <div className="border-b px-4 py-3 text-sm font-semibold">알림</div>
+                    <div className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-2xl border bg-white shadow-xl">
+                      {/* 헤더 */}
+                      <div className="flex items-center justify-between border-b px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold">알림</span>
+                          {unreadCount > 0 && (
+                            <span className="text-xs text-gray-400">
+                              안 읽은 알림 {unreadCount}개
+                            </span>
+                          )}
+                        </div>
 
+                        {hasReadNotifications && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+
+                              await deleteReadNotifications();
+
+                              await fetchNotifications();
+                              await fetchUnread();
+
+                              queryClient.invalidateQueries({
+                                queryKey: ['notifications'],
+                              });
+                              queryClient.invalidateQueries({
+                                queryKey: ['unreadCount'],
+                              });
+                            }}
+                            className="text-xs text-gray-400 hover:text-gray-600 transition"
+                          >
+                            읽은 알림 정리
+                          </button>
+                        )}
+                      </div>
+
+                      {/* 목록 */}
                       <ul className="max-h-80 overflow-y-auto">
                         {notifications.length === 0 && (
-                          <li className="px-4 py-8 text-center text-sm text-gray-500">새 알림이 없습니다</li>
+                          <li className="px-4 py-10 text-center text-sm text-gray-400">
+                            새 알림이 없습니다
+                          </li>
                         )}
 
                         {notifications.slice(0, 5).map((n) => {
@@ -166,23 +221,44 @@ export default function Header() {
                               onClick={async () => {
                                 if (!n.isRead) {
                                   await readNotification(n.id);
-                                  setUnreadCount((c) => Math.max(c - 1, 0));
-                                  setNotifications((prev) =>
-                                    prev.map((item) => (item.id === n.id ? { ...item, isRead: true } : item)),
-                                  );
+
+                                  await fetchNotifications();
+                                  await fetchUnread();
+
+                                  queryClient.invalidateQueries({
+                                    queryKey: ['notifications'],
+                                  });
+                                  queryClient.invalidateQueries({
+                                    queryKey: ['unreadCount'],
+                                  });
                                 }
-
                                 setShowDropdown(false);
-
+                                
+                                router.push('/notifications');
                               }}
-                              className="cursor-pointer px-4 py-3 transition hover:bg-gray-50"
+                              className={[
+                                'cursor-pointer px-4 py-3 transition',
+                                n.isRead
+                                  ? 'bg-white hover:bg-gray-50'
+                                  : 'bg-primary-soft/30 hover:bg-primary-soft/50',
+                              ].join(' ')}
                             >
                               <div className="flex gap-3">
-                                {!n.isRead && <span className={`mt-2 h-2 w-2 rounded-full ${ui.dotColor}`} />}
+                                {!n.isRead && (
+                                  <span
+                                    className={`mt-2 h-2 w-2 rounded-full ${ui.dotColor}`}
+                                  />
+                                )}
                                 <div>
-                                  <span className={`text-xs font-medium ${ui.color}`}>{ui.label}</span>
+                                  <span
+                                    className={`text-xs font-medium ${ui.color}`}
+                                  >
+                                    {ui.label}
+                                  </span>
                                   <p className="text-sm">{n.message}</p>
-                                  <p className="mt-1 text-xs text-gray-400">{formatRelativeTime(n.createdAt)}</p>
+                                  <p className="mt-1 text-xs text-gray-400">
+                                    {formatRelativeTime(n.createdAt)}
+                                  </p>
                                 </div>
                               </div>
                             </li>
@@ -190,13 +266,14 @@ export default function Header() {
                         })}
                       </ul>
 
+                      {/* 하단 */}
                       <div className="border-t px-4 py-3">
                         <button
                           onClick={() => {
                             setShowDropdown(false);
                             router.push('/notifications');
                           }}
-                          className="w-full rounded-lg bg-primary-soft py-2 text-sm font-medium text-primary hover:bg-primary-soft/70"
+                          className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary-hover transition"
                         >
                           모든 알림 보기
                         </button>
@@ -205,7 +282,7 @@ export default function Header() {
                   )}
                 </div>
 
-   
+      
                 <div className="flex items-center gap-2 rounded-full bg-surface-muted px-2 py-1">
                   <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
                     {user.nickname?.[0]}
@@ -221,7 +298,10 @@ export default function Header() {
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm text-text-secondary hover:text-primary">
+                <Link
+                  href="/login"
+                  className="text-sm text-text-secondary hover:text-primary"
+                >
                   로그인
                 </Link>
                 <Link
@@ -236,7 +316,9 @@ export default function Header() {
         </div>
       </header>
 
-      {showLoginModal && <LoginRequiredModal onClose={() => setShowLoginModal(false)} />}
+      {showLoginModal && (
+        <LoginRequiredModal onClose={() => setShowLoginModal(false)} />
+      )}
 
       {showLogoutModal && (
         <ConfirmModal

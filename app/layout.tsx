@@ -5,7 +5,6 @@ import Header from "@/shared/components/Header";
 import WeatherWidget from "@/shared/components/WeatherWidget";
 import { Providers } from "./provider";
 import AuthInitializer from "@/shared/components/AuthInitializer";
-import FriendSummaryWidget from "@/shared/components/friends/FriendSummaryWidget";
 import FriendsSidebar from "@/shared/components/friends/FriendSidebar";
 
 const geistSans = Geist({

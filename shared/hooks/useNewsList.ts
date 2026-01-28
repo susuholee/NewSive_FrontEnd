@@ -1,25 +1,12 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { NewsList } from '../api/news.api';
+import { useQuery } from '@tanstack/react-query';
+import { getTopNews } from '../api/news.api';
 
-export function useNewsList() {
-  const queryClient = useQueryClient();
-
-
-  const query = useQuery({
+export function useNewsList(options?: { enabled?: boolean }) {
+  return useQuery({
     queryKey: ['news'],
-    queryFn: () => NewsList(false),
-    staleTime: 0,
+    queryFn: getTopNews,
+    staleTime: 1000 * 60,
     refetchOnWindowFocus: false,
+    enabled: options?.enabled ?? true,
   });
-
-
-  const refresh = async () => {
-    const data = await NewsList(true);         
-    queryClient.setQueryData(['news'], data);  
-  };
-
-  return {
-    ...query,
-    refresh,          
-  };
 }
