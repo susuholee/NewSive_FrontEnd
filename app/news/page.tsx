@@ -68,7 +68,6 @@ export default function NewsPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
 
-      {/* 헤더 */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold">최신 뉴스</h2>
 
@@ -82,14 +81,24 @@ export default function NewsPage() {
 
           <button
             onClick={() => refetch()}
-            className="flex items-center gap-1 rounded border px-3 py-1 text-sm hover:bg-gray-100"
+            className="
+              flex items-center gap-1
+              rounded-md border border-primary
+              bg-primary px-3 py-1 text-sm font-medium text-white
+              transition
+              hover:bg-primary-hover
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-primary
+            "
           >
-            새로고침
+            최신 뉴스 불러오기
           </button>
+
         </div>
       </div>
 
-      {/* 뉴스 리스트 */}
+  
       <ul className="space-y-4">
         {visibleNews.map((news) => (
           <li
@@ -133,26 +142,33 @@ export default function NewsPage() {
         ))}
       </ul>
 
-      {/* 페이지네이션 */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center gap-1">
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .slice(Math.max(0, page - 3), page + 2)
-            .map((p) => (
-              <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`px-3 py-1 text-sm border rounded
-                  ${p === page
-                    ? "bg-gray-900 text-white"
-                    : "hover:bg-gray-100"
-                  }`}
-              >
-                {p}
-              </button>
-            ))}
-        </div>
-      )}
+
+     {totalPages > 1 && (
+  <div className="mt-8 flex justify-center gap-1">
+    {Array.from({ length: totalPages }, (_, i) => i + 1)
+      .slice(Math.max(0, page - 3), page + 2)
+      .map((p) => {
+        const isActive = p === page;
+
+        return (
+          <button
+            key={p}
+            onClick={() => setPage(p)}
+            className={`
+              min-w-[36px] rounded-md border px-3 py-1 text-sm font-medium transition
+              ${isActive
+                ? "bg-primary border-primary text-white"
+                : "border-surface-muted text-text-secondary hover:bg-primary-soft hover:text-primary"
+              }
+            `}
+          >
+            {p}
+          </button>
+        );
+      })}
+  </div>
+)}
+
     </main>
   );
 }
