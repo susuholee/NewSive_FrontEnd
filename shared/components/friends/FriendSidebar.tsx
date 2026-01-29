@@ -168,7 +168,62 @@ export default function FriendsSidebar() {
             ))}
           </div>
 
-          {/* ================= RECEIVED TAB ================= */}
+          {tab === 'friends' && (
+  <>
+    {friends.length === 0 ? (
+      <p className="py-6 text-center text-sm text-gray-400">
+        친구가 없습니다.
+      </p>
+    ) : (
+      <ul className="space-y-3">
+        {friends.map((f) => (
+          <li
+            key={f.id}
+            className="flex items-center gap-3 rounded-xl border p-3"
+          >
+            <img
+              src={f.profileImgUrl || '/default-avatar.png'}
+              className="h-10 w-10 rounded-full"
+            />
+
+            <div className="flex-1">
+              <p>{f.nickname}</p>
+              <p className="text-sm text-gray-400">{f.username}</p>
+            </div>
+
+            {/* 대화하기 */}
+            <button
+              onClick={() => router.push(`/chat/${f.friendId}`)}
+              className="bg-primary text-white px-3 py-1 text-xs rounded-lg"
+            >
+              대화하기
+            </button>
+
+            {/* 친구 삭제 */}
+            <button
+              onClick={() =>
+                setConfirm({
+                  title: '친구 삭제',
+                  description: `${f.nickname}님을 친구 목록에서 삭제할까요?`,
+                  onConfirm: () => {
+                    deleteFriend.mutate(f.friendId);
+                    setConfirm(null);
+                  },
+                })
+              }
+              className="text-red-500 text-xs"
+            >
+              삭제
+            </button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </>
+)}
+
+
+     
           {tab === 'received' && (
             <>
               {received.length === 0 ? (
