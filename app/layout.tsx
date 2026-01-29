@@ -30,22 +30,34 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         <Providers>
           <AuthInitializer>
-          <Header />
-          <div className="mx-auto max-w-6xl px-4 py-6">
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
-              <main>{children}</main>
-              <aside className="hidden lg:block">
-                <div className="sticky top-20 flex flex-col gap-6">
-                  <WeatherWidget />
-                <FriendsSidebar/>
+            <Header />
+
+
+            <div className="min-h-[calc(100vh-72px)]">
+              <div className="mx-auto max-w-6xl px-4 py-6 h-full">
+                <div className="flex h-full gap-6 items-start">
+
+               
+                  <main className="w-full flex justify-center items-center">
+                    {children}
+                  </main>
+
+             
+                  <aside className="hidden lg:block w-[280px]">
+                    <div className="sticky top-20 flex flex-col gap-6">
+                      <WeatherWidget />
+                      <FriendsSidebar />
+                    </div>
+                  </aside>
+
                 </div>
-              </aside>
+              </div>
             </div>
-          </div>
+
           </AuthInitializer>
         </Providers>
       </body>
