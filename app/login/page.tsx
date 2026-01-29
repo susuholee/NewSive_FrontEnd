@@ -14,7 +14,7 @@ import axios from 'axios';
 export default function LoginPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { user, login: setLogin } = useAuthStore();
+  const { user, setUser } = useAuthStore();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -31,7 +31,7 @@ export default function LoginPage() {
     onSuccess: (data) => {
       useFriendStore.getState().reset();
       queryClient.clear();
-      setLogin(data.user);
+      setUser(data.user);
     },
     onError: (error) => {
       if (axios.isAxiosError(error)) {

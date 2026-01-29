@@ -8,5 +8,8 @@ export type LoginResponse = {
         id : number;
         username : string;
         nickname : string;
+        birthday?: string;
+        gender?: 'male' | 'female' | 'other';
+        profileImgUrl?: string;
     }
 }

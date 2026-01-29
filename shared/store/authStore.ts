@@ -6,30 +6,29 @@ type LoginUser = LoginResponse["user"];
 
 type AuthState = {
   user: LoginUser | null;
-  login: (user: LoginUser) => void;
-  updateUser: (partial: Partial<LoginUser>) => void;
+
+  setUser: (user: LoginUser) => void;
+
+  patchUser: (partial: Partial<LoginUser>) => void;
+
   logout: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
 
-  login: (user) =>
+  setUser: (user) =>
     set({
       user,
     }),
 
-  updateUser: (partial) =>
+  patchUser: (partial) =>
     set((state) => ({
       user: state.user ? { ...state.user, ...partial } : state.user,
     })),
 
   logout: () => {
     useFriendStore.getState().reset();
-
-
-    set({
-      user: null,
-    });
+    set({ user: null });
   },
 }));
