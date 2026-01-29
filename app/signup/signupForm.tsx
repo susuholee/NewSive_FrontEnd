@@ -6,9 +6,7 @@ import type { SignupRequest } from '@/shared/types/auth';
 import { useSignupMutation } from '@/shared/queries/useSignupMutation';
 import { checkUsernameAvailability } from '../../shared/api/users.api';
 
-type SignupFormProps = {
-  onSuccess: () => void;
-};
+type SignupFormProps = {onSuccess: () => void;};
 
 type UsernameStatus = 'idle' | 'checking' | 'available' | 'unavailable';
 
@@ -74,8 +72,7 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
   const isPasswordLengthValid = normalizedPassword.length >= PASSWORD_RULES.minLength;
   const isPasswordRegexValid = PASSWORD_RULES.regex.test(normalizedPassword);
   const isPasswordValid = isPasswordLengthValid && isPasswordRegexValid;
-  const isPasswordMatch =
-    normalizedPasswordConfirm && normalizedPassword === normalizedPasswordConfirm;
+  const isPasswordMatch = normalizedPasswordConfirm && normalizedPassword === normalizedPasswordConfirm;
 
   const passwordStrength = (() => {
     let score = 0;
@@ -409,12 +406,13 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
                 ref={passwordConfirmRef}
                 type="password"
                 value={signupValues.passwordConfirm}
-                onChange={(e) =>
-                  setSignupValues((prev) => ({
-                    ...prev,
-                    passwordConfirm: e.target.value,
-                  }))
-                }
+               onChange={(e) => {
+                setSignupValues((prev) => ({
+                  ...prev,
+                  passwordConfirm: e.target.value,
+                }));
+                setStepErrorMessage(null);
+              }}
                 className={inputClass}
               />
 
@@ -596,9 +594,9 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
       {showSuccessModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-surface p-6 rounded-xl text-center space-y-4 shadow-xl">
-            <h2 className="text-lg font-semibold">가입을 축하드립니다</h2>
+            <h2 className="text-lg font-semibold">NewSive 회원가입을 축하드립니다!</h2>
             <p className="text-sm text-text-secondary">
-              이제 채팅과 친구 기능을 사용할 수 있어요.
+              여러 사람들과 뉴스 정보를 공유하며 소통해보세요!!
             </p>
             <button
               className="bg-primary px-6 py-2.5 rounded-lg text-white"
