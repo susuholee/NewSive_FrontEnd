@@ -27,8 +27,13 @@ export default function ChatPage() {
 
   const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
   const [messageInput, setMessageInput] = useState("");
+
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+
   const [files, setFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<FilePreview[]>([]);
+
   const [isJoining, setIsJoining] = useState(true);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [peerUser, setPeerUser] = useState<{
@@ -41,7 +46,7 @@ export default function ChatPage() {
   const roomIdRef = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  /* ================= SOCKET ================= */
+
 
   useEffect(() => {
     if (!user || !friendId) return;
@@ -69,6 +74,39 @@ export default function ChatPage() {
         prev.some((m) => m.id === message.id) ? prev : [...prev, message]
       );
     });
+
+    socket.on(
+      "chat:updated",
+      ({
+        messageId,
+        newContent,
+        editedAt,
+      }: {
+        messageId: string;
+        newContent: string;
+        editedAt: string;
+      }) => {
+        setRealtimeMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, content: newContent, editedAt }
+              : m
+          )
+        );
+
+        queryClient.setQueryData<ChatMessage[]>(
+          ["chatMessages", roomIdRef.current],
+          (old) =>
+            old
+              ? old.map((m) =>
+                  m.id === messageId
+                    ? { ...m, content: newContent, editedAt }
+                    : m
+                )
+              : old
+        );
+      }
+    );
 
     socket.on(
       "chat:media:deleted",
@@ -108,7 +146,6 @@ export default function ChatPage() {
     };
   }, [user, friendId, queryClient]);
 
-  /* ================= HISTORY ================= */
 
   const { data: history = [] } = useQuery({
     queryKey: ["chatMessages", roomId],
@@ -124,7 +161,7 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  /* ================= ACTIONS ================= */
+
 
   const handleSendMessage = async () => {
     if (!roomIdRef.current) return;
@@ -136,7 +173,8 @@ export default function ChatPage() {
     let medias: { url: string; type: "IMAGE" | "VIDEO" }[] = [];
 
     if (hasFiles) {
-      medias = await Promise.all(files.map((f) => uploadChatMedia(f)));
+      const media = await uploadChatMedia(files[0]);
+      medias = [media];
     }
 
     socketRef.current?.emit("chat:send", {
@@ -150,11 +188,22 @@ export default function ChatPage() {
     setFilePreviews([]);
   };
 
+
+  const handleUpdateMessage = (messageId: string) => {
+    if (!editingContent.trim()) return;
+
+    socketRef.current?.emit("chat:update", {
+      messageId,
+      newContent: editingContent.trim(),
+    });
+
+    setEditingMessageId(null);
+    setEditingContent("");
+  };
+
   const handleDeleteMedia = (mediaId: string) => {
     socketRef.current?.emit("chat:media:delete", { mediaId });
   };
-
-  /* ================= UI ================= */
 
   if (isJoining) {
     return (
@@ -166,7 +215,7 @@ export default function ChatPage() {
 
   return (
     <main className="flex h-screen flex-col bg-background">
-      {/* Header */}
+   
       <header className="flex items-center gap-3 border-b border-surface-muted px-5 py-4">
         {peerUser && (
           <>
@@ -176,16 +225,17 @@ export default function ChatPage() {
               className="h-8 w-8 rounded-full object-cover"
             />
             <h1 className="text-sm font-medium text-text-primary">
-              {peerUser.nickname} 님과의 대화
+              {peerUser.nickname}님
             </h1>
           </>
         )}
       </header>
 
-      {/* Messages */}
+
       <section className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
         {messages.map((msg) => {
           const isMe = msg.senderId === user?.id;
+          const isEditing = editingMessageId === msg.id;
 
           const shouldShowDeleted =
             msg.isDeleted || (!msg.content && msg.medias?.length === 0);
@@ -202,6 +252,8 @@ export default function ChatPage() {
                   px-4 py-3
                   text-sm
                   leading-relaxed
+                  relative
+                  group
                   ${
                     isMe
                       ? "bg-primary-soft rounded-br-md"
@@ -215,6 +267,7 @@ export default function ChatPage() {
                   </p>
                 ) : (
                   <>
+                
                     {msg.medias?.map((m) => (
                       <div
                         key={m.id}
@@ -230,27 +283,101 @@ export default function ChatPage() {
                         )}
 
                         {m.type === "IMAGE" ? (
-                          <img
-                            src={m.url}
-                            className="w-full object-cover"
-                          />
+                          <img src={m.url} className="w-full object-cover" />
                         ) : (
-                          <video
-                            src={m.url}
-                            controls
-                            className="w-full"
-                          />
+                          <video src={m.url} controls className="w-full" />
                         )}
                       </div>
                     ))}
 
-                    {msg.content && <p>{msg.content}</p>}
+            
+                  {msg.content && (
+                  <>
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          autoFocus
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleUpdateMessage(msg.id);
+                            if (e.key === "Escape") {
+                              setEditingMessageId(null);
+                              setEditingContent("");
+                            }
+                          }}
+                          className="flex-1 rounded-lg bg-white/70 px-2 py-1 text-sm"
+                        />
+
+                    
+                        <button
+                          onClick={() => handleUpdateMessage(msg.id)}
+                          className="
+                            rounded-md
+                            bg-primary
+                            px-2 py-1
+                            text-xs
+                            text-white
+                            hover:bg-primary-hover
+                            transition
+                            whitespace-nowrap
+                          "
+                        >
+                          저장
+                        </button>
+
+                        {/* 취소 버튼 */}
+                        <button
+                          onClick={() => {
+                            setEditingMessageId(null);
+                            setEditingContent("");
+                          }}
+                          className="
+                            rounded-md
+                            bg-surface-muted
+                            px-2 py-1
+                            text-xs
+                            text-text-secondary
+                            hover:bg-surface
+                            transition
+                            whitespace-nowrap
+                          "
+                        >
+                          취소
+                        </button>
+                      </div>
+                    ) : (
+                      <p>{msg.content}</p>
+                    )}
+
+                    {msg.editedAt && !isEditing && (
+                      <span className="ml-1 text-[10px] text-text-secondary">
+                        (수정됨)
+                      </span>
+                    )}
                   </>
                 )}
 
-                <p className="mt-2 text-right text-xs text-text-secondary">
-                  {formatChatTime(msg.createdAt)}
-                </p>
+                  </>
+                )}
+
+                <div className="mt-2 flex items-center justify-end gap-2">
+                  {isMe && msg.content && !isEditing && (
+                    <button
+                      onClick={() => {
+                        setEditingMessageId(msg.id);
+                        setEditingContent(msg.content ?? "");
+                      }}
+                      className="text-xs text-text-secondary opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                    >
+                      수정
+                    </button>
+                  )}
+
+                  <span className="text-xs text-text-secondary">
+                    {formatChatTime(msg.createdAt)}
+                  </span>
+                </div>
               </div>
             </div>
           );
@@ -258,34 +385,63 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </section>
 
-      {/* Input */}
+ 
+      {filePreviews.length > 0 && (
+        <div className="border-t border-surface-muted bg-surface px-4 py-3">
+          <div className="relative w-40 overflow-hidden rounded-xl">
+            <button
+              onClick={() => {
+                setFiles([]);
+                setFilePreviews([]);
+              }}
+              className="absolute right-1 top-1 z-10 rounded-full bg-black/60 px-2 py-0.5 text-xs text-white"
+            >
+              ✕
+            </button>
+
+            {filePreviews[0].type === "IMAGE" ? (
+              <img
+                src={filePreviews[0].url}
+                className="h-32 w-full object-cover"
+              />
+            ) : (
+              <video
+                src={filePreviews[0].url}
+                className="h-32 w-full object-cover"
+                controls
+              />
+            )}
+          </div>
+        </div>
+      )}
+
       <footer className="border-t border-surface-muted bg-surface px-4 py-3">
         <div className="flex items-center gap-2">
           <input
             type="file"
-            multiple
             hidden
             id="media-input"
+            accept="image/*,video/*"
             onChange={(e) => {
-              if (!e.target.files) return;
+              const file = e.target.files?.[0];
+              if (!file) return;
 
-              const selected = Array.from(e.target.files);
-              setFiles(selected);
-              setFilePreviews(
-                selected.map((file) => ({
+              setFiles([file]);
+              setFilePreviews([
+                {
                   file,
                   url: URL.createObjectURL(file),
                   type: file.type.startsWith("video")
                     ? "VIDEO"
                     : "IMAGE",
-                }))
-              );
+                },
+              ]);
             }}
           />
 
           <label
             htmlFor="media-input"
-            className="cursor-pointer rounded-xl border px-4 py-2 text-sm"
+            className="cursor-pointer rounded-xl bg-surface-muted px-4 py-2 text-sm text-text-secondary hover:bg-primary-soft/40 hover:text-primary transition"
           >
             파일 첨부
           </label>
