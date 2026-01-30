@@ -19,7 +19,7 @@ export const ConfirmModal = ({
 }: Props) => {
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-[modalIn_0.25s_ease-out]"
       onClick={onCancel}
     >
       <div

@@ -1,15 +1,13 @@
 import { create } from 'zustand';
-import type { LoginResponse } from '@/shared/types/login';
+import type { User } from '@/shared/types/user';
 import { useFriendStore } from './useFriendStore';
 
-type LoginUser = LoginResponse["user"];
-
 type AuthState = {
-  user: LoginUser | null;
+  user: User | null;
 
-  setUser: (user: LoginUser) => void;
+  setUser: (user: User) => void;
 
-  patchUser: (partial: Partial<LoginUser>) => void;
+  patchUser: (partial: Partial<User>) => void;
 
   logout: () => void;
 };

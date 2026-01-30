@@ -35,29 +35,24 @@ export default function RootLayout({
         <Providers>
           <AuthInitializer>
             <Header />
+              <div className="min-h-[calc(100vh-72px)]">
+          <div className="mx-auto max-w-6xl px-4 py-6">
+            <div className="flex gap-6 items-start">
 
+              <main className="flex-1">
+                {children}
+              </main>
 
-            <div className="min-h-[calc(100vh-72px)]">
-              <div className="mx-auto max-w-6xl px-4 py-6 h-full">
-                <div className="flex h-full gap-6 items-start">
-
-               
-                  <main className="w-full flex justify-center items-center">
-                    {children}
-                  </main>
-
-             
-                  <aside className="hidden lg:block w-[280px]">
-                    <div className="sticky top-20 flex flex-col gap-6">
-                      <WeatherWidget />
-                      <FriendsSidebar />
-                    </div>
-                  </aside>
-
+              <aside className="hidden lg:block w-[280px]">
+                <div className="sticky top-20 flex flex-col gap-6">
+                  <WeatherWidget />
+                  <FriendsSidebar />
                 </div>
-              </div>
-            </div>
+              </aside>
 
+            </div>
+          </div>
+        </div>
           </AuthInitializer>
         </Providers>
       </body>
