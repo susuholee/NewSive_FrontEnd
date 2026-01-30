@@ -13,12 +13,7 @@ import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
 import { logout as logoutApi } from '../api/auth.api';
 import { ConfirmModal } from './ConfirmModal';
 
-import {
-  getNotifications,
-  getUnreadCount,
-  readNotification,
-  deleteReadNotifications,
-} from '@/shared/api/notifications.api';
+import { getNotifications, getUnreadCount, readNotification, deleteReadNotifications} from '@/shared/api/notifications.api';
 
 import type { Notification } from '../types/notification';
 import { notificationUIMap } from '@/shared/constants/notificationUI';
@@ -93,7 +88,6 @@ export default function Header() {
     fetchNotifications();
   }, [showDropdown, isAuthenticated, user]);
 
-  /* ================= 바깥 클릭 ================= */
 
   useEffect(() => {
     if (!showDropdown) return;
@@ -115,7 +109,6 @@ export default function Header() {
     <>
       <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          {/* 로고 */}
           <Link href="/" className="flex items-center gap-2 text-lg font-bold text-primary">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
@@ -146,11 +139,9 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* 우측 */}
           <div className="relative flex items-center gap-3">
             {user ? (
               <>
-                {/* 🔔 알림 */}
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={(e) => {
@@ -169,7 +160,6 @@ export default function Header() {
 
                   {showDropdown && (
                     <div className="absolute right-0 top-10 z-50 w-80 overflow-hidden rounded-2xl border bg-white shadow-xl">
-                      {/* 헤더 */}
                       <div className="flex items-center justify-between border-b px-4 py-3">
                         <div className="flex flex-col">
                           <span className="text-sm font-semibold">알림</span>
@@ -266,7 +256,7 @@ export default function Header() {
                         })}
                       </ul>
 
-                      {/* 하단 */}
+                 
                       <div className="border-t px-4 py-3">
                         <button
                           onClick={() => {
