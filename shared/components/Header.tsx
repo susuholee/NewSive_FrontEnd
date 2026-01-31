@@ -117,7 +117,7 @@ export default function Header() {
             NewSive
           </Link>
 
-          {/* 네비 */}
+     
           <nav className="flex items-center gap-1 rounded-full bg-surface-muted p-1 text-sm">
             {NAV_ITEMS.map((item) => (
               <button
@@ -236,12 +236,12 @@ export default function Header() {
                               <div className="flex gap-3">
                                 {!n.isRead && (
                                   <span
-                                    className={`mt-2 h-2 w-2 rounded-full ${ui.dotColor}`}
+                                    className={`mt-2 h-2 w-2 rounded-full ${ui.dotClass}`}
                                   />
                                 )}
                                 <div>
                                   <span
-                                    className={`text-xs font-medium ${ui.color}`}
+                                    className={`text-xs font-medium ${ui.textClass}`}
                                   >
                                     {ui.label}
                                   </span>

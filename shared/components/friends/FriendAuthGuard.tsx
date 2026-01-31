@@ -18,7 +18,7 @@ export default function FriendAuthGuard({ children, lockedMessage }: Props) {
       <>
         <div className="rounded-2xl bg-white p-5 shadow-md text-center text-sm text-gray-400">
           <p className="mb-3">
-            {lockedMessage || '친구 기능은 로그인 후 사용할 수 있어요.'}
+            {lockedMessage || '친구 기능은 로그인 후 사용할 수 있습니다'}
           </p>
 
           <button
