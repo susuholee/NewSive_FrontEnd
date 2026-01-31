@@ -1,12 +1,17 @@
 'use client';
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/shared/store/authStore";
-import { changeNickname, changePassword,updateProfileImage,deleteUser} from "@/shared/api/users.api";
-import { ConfirmModal } from "@/shared/components/ConfirmModal";
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/shared/store/authStore';
+import {
+  changeNickname,
+  changePassword,
+  updateProfileImage,
+  deleteUser,
+} from '@/shared/api/users.api';
+import { ConfirmModal } from '@/shared/components/ConfirmModal';
 
-function getAge(birthday?: string) {
+function getAge(birthday?: string | null) {
   if (!birthday) return null;
 
   const birth = new Date(birthday);
@@ -33,12 +38,12 @@ export default function MyPage() {
 
   const age = getAge(user?.birthday);
 
-  const [nickname, setNickname] = useState(user?.nickname || "");
+  const [nickname, setNickname] = useState(user?.nickname || '');
   const [isSavingNickname, setIsSavingNickname] = useState(false);
 
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +65,7 @@ export default function MyPage() {
     confirmText?: string;
     cancelText?: string;
     onConfirm?: () => void;
-  }>({ open: false, title: "" });
+  }>({ open: false, title: '' });
 
   const closeModal = () => {
     setModal((prev) => ({ ...prev, open: false }));
@@ -71,8 +76,8 @@ export default function MyPage() {
       open: true,
       title,
       description,
-      confirmText: "확인",
-      cancelText: "닫기",
+      confirmText: '확인',
+      cancelText: '닫기',
       onConfirm: closeModal,
     });
   };
@@ -80,10 +85,10 @@ export default function MyPage() {
   const openConfirmImageModal = () => {
     setModal({
       open: true,
-      title: "프로필 이미지 변경",
-      description: "프로필 이미지를 변경하시겠습니까?",
-      confirmText: "변경",
-      cancelText: "취소",
+      title: '프로필 이미지 변경',
+      description: '프로필 이미지를 변경하시겠습니까?',
+      confirmText: '변경',
+      cancelText: '취소',
       onConfirm: () => {
         closeModal();
         fileInputRef.current?.click();
@@ -97,22 +102,22 @@ export default function MyPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    e.target.value = "";
+    e.target.value = '';
 
     const previewUrl = URL.createObjectURL(file);
     setAvatarUrl(previewUrl);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
 
     try {
       setIsUploadingImage(true);
       const res = await updateProfileImage(formData);
       patchUser({ profileImgUrl: res.profileImgUrl });
-      openInfoModal("완료", "프로필 이미지가 변경되었습니다.");
+      openInfoModal('완료', '프로필 이미지가 변경되었습니다.');
     } catch {
       setAvatarUrl(user?.profileImgUrl ?? null);
-      openInfoModal("실패", "프로필 이미지 변경에 실패했습니다.");
+      openInfoModal('실패', '프로필 이미지 변경에 실패했습니다.');
     } finally {
       setIsUploadingImage(false);
     }
@@ -122,8 +127,8 @@ export default function MyPage() {
     const trimmed = nickname.trim();
 
     if (!trimmed || trimmed === user?.nickname) {
-      setNickname(user?.nickname ?? "");
-      openInfoModal("안내", "변경된 내용이 없습니다.");
+      setNickname(user?.nickname ?? '');
+      openInfoModal('안내', '변경된 내용이 없습니다.');
       return;
     }
 
@@ -131,9 +136,9 @@ export default function MyPage() {
       setIsSavingNickname(true);
       await changeNickname(trimmed);
       patchUser({ nickname: trimmed });
-      openInfoModal("완료", "닉네임이 변경되었습니다.");
+      openInfoModal('완료', '닉네임이 변경되었습니다.');
     } catch {
-      openInfoModal("실패", "닉네임 변경에 실패했습니다.");
+      openInfoModal('실패', '닉네임 변경에 실패했습니다.');
     } finally {
       setIsSavingNickname(false);
     }
@@ -141,24 +146,24 @@ export default function MyPage() {
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !newPasswordConfirm) {
-      openInfoModal("오류", "모든 비밀번호를 입력해주세요.");
+      openInfoModal('오류', '모든 비밀번호를 입력해주세요.');
       return;
     }
 
     if (newPassword !== newPasswordConfirm) {
-      openInfoModal("오류", "새 비밀번호가 서로 일치하지 않습니다.");
+      openInfoModal('오류', '새 비밀번호가 서로 일치하지 않습니다.');
       return;
     }
 
     try {
       setIsSavingPassword(true);
       await changePassword(currentPassword, newPassword);
-      openInfoModal("완료", "비밀번호가 변경되었습니다.");
-      setCurrentPassword("");
-      setNewPassword("");
-      setNewPasswordConfirm("");
+      openInfoModal('완료', '비밀번호가 변경되었습니다.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setNewPasswordConfirm('');
     } catch {
-      openInfoModal("실패", "비밀번호 변경에 실패했습니다.");
+      openInfoModal('실패', '비밀번호 변경에 실패했습니다.');
     } finally {
       setIsSavingPassword(false);
     }
@@ -169,10 +174,10 @@ export default function MyPage() {
     try {
       await deleteUser();
       logout();
-      openInfoModal("탈퇴 완료", "회원 탈퇴가 정상적으로 처리되었습니다.");
-      setTimeout(() => router.replace("/"), 500);
+      openInfoModal('탈퇴 완료', '회원 탈퇴가 정상적으로 처리되었습니다.');
+      setTimeout(() => router.replace('/'), 500);
     } catch {
-      openInfoModal("실패", "회원 탈퇴 처리에 실패했습니다.");
+      openInfoModal('실패', '회원 탈퇴 처리에 실패했습니다.');
     }
   };
 
@@ -180,9 +185,8 @@ export default function MyPage() {
     <main className="min-h-screen bg-background py-12 text-text-primary">
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex flex-col gap-10 md:flex-row md:items-start">
-
-
-          <aside className="sticky top-24 h-fit w-full md:w-[280px] rounded-xl bg-white border border-surface-muted shadow-sm overflow-hidden">
+          {/* ===== 프로필 사이드 ===== */}
+          <aside className="w-full h-fit md:sticky md:top-24 md:w-[280px] rounded-xl bg-white border border-surface-muted shadow-sm overflow-hidden">
             <div className="bg-primary-soft px-4 py-2 text-[11px] text-text-secondary border-b">
               내 프로필
             </div>
@@ -201,7 +205,7 @@ export default function MyPage() {
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-text-secondary">
-                      {user?.nickname?.[0] || "U"}
+                      {user?.nickname?.[0] || 'U'}
                     </div>
                   )}
 
@@ -220,7 +224,7 @@ export default function MyPage() {
                     <div className="mt-1 flex justify-center gap-2 text-[11px] text-text-secondary">
                       {age !== null && <span>{age}세</span>}
                       {user?.gender && (
-                        <span>{user.gender === "male" ? "남성" : "여성"}</span>
+                        <span>{user.gender === 'male' ? '남성' : '여성'}</span>
                       )}
                     </div>
                   )}
@@ -245,7 +249,9 @@ export default function MyPage() {
             </div>
           </aside>
 
+          {/* ===== 메인 ===== */}
           <div className="flex-1 space-y-10">
+            {/* 내 정보 */}
             <section className="rounded-2xl bg-surface p-8 border border-surface-muted shadow-sm">
               <h2 className="mb-6 text-lg font-semibold">내 정보</h2>
 
@@ -262,7 +268,6 @@ export default function MyPage() {
                   <input
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
-                    className="w-full rounded-xl border border-surface-muted bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-primary"
                   />
 
                   <button
@@ -270,29 +275,57 @@ export default function MyPage() {
                     disabled={isSavingNickname}
                     className="mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                   >
-                    {isSavingNickname ? "저장 중..." : "닉네임 저장"}
+                    {isSavingNickname ? '저장 중...' : '닉네임 저장'}
                   </button>
                 </div>
               </div>
             </section>
 
+            {/* 비밀번호 변경 */}
             <section className="rounded-2xl bg-surface p-8 border border-surface-muted shadow-sm">
               <h2 className="mb-6 text-lg font-semibold">비밀번호 변경</h2>
 
               <div className="space-y-4 max-w-md">
-                <input type="password" placeholder="현재 비밀번호" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full rounded-xl border border-surface-muted px-3 py-2" />
-                <input type="password" placeholder="새 비밀번호" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full rounded-xl border border-surface-muted px-3 py-2" />
-                <input type="password" placeholder="새 비밀번호 확인" value={newPasswordConfirm} onChange={(e) => setNewPasswordConfirm(e.target.value)} className="w-full rounded-xl border border-surface-muted px-3 py-2" />
+                <input
+                  type="password"
+                  placeholder="현재 비밀번호"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="새 비밀번호"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <input
+                  type="password"
+                  placeholder="새 비밀번호 확인"
+                  value={newPasswordConfirm}
+                  onChange={(e) =>
+                    setNewPasswordConfirm(e.target.value)
+                  }
+                />
 
-                <button onClick={handleChangePassword} disabled={isSavingPassword} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50">
-                  {isSavingPassword ? "변경 중..." : "비밀번호 변경"}
+                <button
+                  onClick={handleChangePassword}
+                  disabled={isSavingPassword}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {isSavingPassword ? '변경 중...' : '비밀번호 변경'}
                 </button>
               </div>
             </section>
 
+            {/* 회원 탈퇴 */}
             <section className="rounded-2xl bg-surface p-8 border border-surface-muted shadow-sm">
-              <h2 className="mb-4 text-lg font-semibold text-red-600">회원 탈퇴</h2>
-              <button onClick={handleConfirmDeleteUser} className="rounded-lg border border-red-500 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50">
+              <h2 className="mb-4 text-lg font-semibold text-red-600">
+                회원 탈퇴
+              </h2>
+              <button
+                onClick={handleConfirmDeleteUser}
+                className="rounded-lg border border-red-500 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
                 회원 탈퇴
               </button>
             </section>

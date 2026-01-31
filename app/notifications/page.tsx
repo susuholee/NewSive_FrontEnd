@@ -13,20 +13,19 @@ export default function NotificationsPage() {
   });
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
-      {/* title */}
-      <h1 className="mb-6 text-2xl font-bold">알림</h1>
+    <main className="mx-auto max-w-2xl px-3 sm:px-4 py-6 sm:py-8">
+      <h1 className="mb-5 sm:mb-6 text-xl sm:text-2xl font-bold">
+        알림 리스트
+      </h1>
 
-      {/* empty */}
       {notifications.length === 0 && (
-        <div className="mt-24 text-center">
+        <div className="mt-16 sm:mt-24 text-center">
           <p className="text-sm text-text-secondary">
             아직 받은 알림이 없습니다.
           </p>
         </div>
       )}
 
-      {/* list */}
       {notifications.length > 0 && (
         <ul className="space-y-3">
           {notifications.map((n) => {
@@ -36,24 +35,21 @@ export default function NotificationsPage() {
               <li
                 key={n.id}
                 className={[
-                  'rounded-2xl border px-5 py-4 transition',
+                  'rounded-2xl border px-4 py-3 sm:px-5 sm:py-4 transition',
                   n.isRead
                     ? 'bg-surface hover:bg-surface-muted'
                     : 'bg-primary-soft/40 hover:bg-primary-soft/60',
                 ].join(' ')}
               >
                 <div className="flex gap-3">
-                  {/* dot */}
                   {!n.isRead && (
                     <span
                       className={`mt-1.5 h-2.5 w-2.5 rounded-full ${ui.dotClass}`}
                     />
                   )}
 
-                  {/* content */}
                   <div className="flex-1">
-                    {/* type */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span
                         className={`text-xs font-semibold ${ui.textClass}`}
                       >
@@ -67,12 +63,10 @@ export default function NotificationsPage() {
                       )}
                     </div>
 
-                    {/* message */}
                     <p className="mt-1 text-sm leading-relaxed text-text-primary">
                       {n.message}
                     </p>
 
-                    {/* time */}
                     <p className="mt-2 text-xs text-text-secondary">
                       {formatRelativeTime(n.createdAt)}
                     </p>

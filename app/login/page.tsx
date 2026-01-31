@@ -31,7 +31,13 @@ export default function LoginPage() {
     onSuccess: (data) => {
       useFriendStore.getState().reset();
       queryClient.clear();
-      setUser(data.user);
+        if (data.user) {
+      setUser({
+        ...data.user,
+        profileImgUrl: data.user.profileImgUrl ?? null,
+        birthday: data.user.birthday ?? null,
+      });
+    }
     },
     onError: (error) => {
       setShake(true);
@@ -60,7 +66,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-background px-4">
+    <main className="flex min-h-[calc(100vh-72px)] items-center justify-center bg-background px-4  -translate-y-6">
       <div
         className={`
           w-full max-w-md rounded-2xl bg-surface p-7 shadow-sm

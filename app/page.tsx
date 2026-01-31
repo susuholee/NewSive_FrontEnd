@@ -6,7 +6,6 @@ import TypingText from "@/shared/components/TypingText";
 export default function Home() {
   return (
     <main className="bg-background text-text-primary">
-
       <section className="flex min-h-[85vh] flex-col items-center justify-center px-6 text-center">
         
         <div className="mb-6 flex items-center gap-2 text-xl font-bold text-primary">
@@ -17,12 +16,11 @@ export default function Home() {
           NewSive
         </div>
 
-
+   
         <TypingText
-            title="지금의 세상을 읽다"
-            description={`최신 뉴스, 알림, 그리고 대화를 한 곳에서 지금 발생하는 이슈를 빠르게 확인하고 흐름을 놓치지 마세요.`}
-          />
-
+          title="지금의 세상을 읽다"
+          description={`정보 습득, 알림, 그리고 친구들과 소통을 통해 \n정보를 공유하는`}
+        />
         <Link
           href="/login"
           className="mt-10 rounded-full bg-primary px-10 py-3 text-sm font-semibold text-white hover:bg-primary-hover transition"
@@ -62,6 +60,8 @@ export default function Home() {
         현재 위치 기반의 실시간 날씨 정보를 제공합니다.
       </Feature>
     </div>
+
+
 
     </div>
   </section>

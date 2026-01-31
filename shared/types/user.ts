@@ -3,7 +3,7 @@ export type User = {
   username: string;
   nickname: string;
   profileImgUrl: string | null;
-  birthday?: string;
+  birthday: string | null;
   gender?: "male" | "female" | "other"
 };
 

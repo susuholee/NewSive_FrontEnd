@@ -12,8 +12,8 @@ type Props = {
 export default function TypingText({
   title,
   description,
-  titleSpeed = 40,
-  textSpeed = 25,
+  titleSpeed = 45,
+  textSpeed = 30,
 }: Props) {
   const [typedTitle, setTypedTitle] = useState("");
   const [typedDesc, setTypedDesc] = useState("");

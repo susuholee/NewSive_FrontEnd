@@ -1,17 +1,17 @@
 'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import ThumbnailImage from "@/shared/components/ThumbnailImage";
-import { useNewsList } from "../../shared/hooks/useNewsList";
+import { useState } from 'react';
+import Link from 'next/link';
+import ThumbnailImage from '@/shared/components/ThumbnailImage';
+import { useNewsList } from '../../shared/hooks/useNewsList';
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
+  return new Date(iso).toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -67,22 +67,23 @@ export default function NewsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
-
-      <div className="mb-4 flex items-center justify-between">
+      {/* ===== 상단 헤더 (반응형 개선) ===== */}
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold">최신 뉴스</h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
           {dataUpdatedAt > 0 && (
-            <span className="text-xs text-gray-400">
-              마지막 업데이트:{" "}
-              {new Date(dataUpdatedAt).toLocaleTimeString("ko-KR")}
+            <span className="text-xs text-gray-400 whitespace-nowrap sm:whitespace-normal">
+              마지막 업데이트:{' '}
+              {new Date(dataUpdatedAt).toLocaleTimeString('ko-KR')}
             </span>
           )}
 
           <button
             onClick={() => refetch()}
             className="
-              flex items-center gap-1
+              w-full sm:w-auto
+              flex items-center justify-center gap-1
               rounded-md border border-primary
               bg-primary px-3 py-1 text-sm font-medium text-white
               transition
@@ -94,11 +95,10 @@ export default function NewsPage() {
           >
             최신 뉴스 불러오기
           </button>
-
         </div>
       </div>
 
-  
+      {/* ===== 뉴스 리스트 ===== */}
       <ul className="space-y-4">
         {visibleNews.map((news) => (
           <li
@@ -142,33 +142,32 @@ export default function NewsPage() {
         ))}
       </ul>
 
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center gap-1">
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .slice(Math.max(0, page - 3), page + 2)
+            .map((p) => {
+              const isActive = p === page;
 
-     {totalPages > 1 && (
-  <div className="mt-8 flex justify-center gap-1">
-    {Array.from({ length: totalPages }, (_, i) => i + 1)
-      .slice(Math.max(0, page - 3), page + 2)
-      .map((p) => {
-        const isActive = p === page;
-
-        return (
-          <button
-            key={p}
-            onClick={() => setPage(p)}
-            className={`
-              min-w-[36px] rounded-md border px-3 py-1 text-sm font-medium transition
-              ${isActive
-                ? "bg-primary border-primary text-white"
-                : "border-surface-muted text-text-secondary hover:bg-primary-soft hover:text-primary"
-              }
-            `}
-          >
-            {p}
-          </button>
-        );
-      })}
-  </div>
-)}
-
+              return (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`
+                    min-w-[36px] rounded-md border px-3 py-1 text-sm font-medium transition
+                    ${
+                      isActive
+                        ? 'bg-primary border-primary text-white'
+                        : 'border-surface-muted text-text-secondary hover:bg-primary-soft hover:text-primary'
+                    }
+                  `}
+                >
+                  {p}
+                </button>
+              );
+            })}
+        </div>
+      )}
     </main>
   );
 }

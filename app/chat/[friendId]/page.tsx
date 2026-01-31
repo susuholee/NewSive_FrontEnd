@@ -232,7 +232,7 @@ export default function ChatPage() {
       </header>
 
 
-      <section className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+      <section className="flex-1 overflow-y-auto px-4 py-6 space-y-4 pb-24">
         {messages.map((msg) => {
           const isMe = msg.senderId === user?.id;
           const isEditing = editingMessageId === msg.id;
