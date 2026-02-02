@@ -1,6 +1,6 @@
 import axios from 'axios';
 
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:4000',
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });

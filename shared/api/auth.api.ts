@@ -24,7 +24,6 @@ export const logout = async () => {
         const res = await apiClient.post('/auth/logout');
         return res.data;
     } catch (error) {
-        console.log("로그아웃 요청 오류", error)
         throw error;
     }
 }

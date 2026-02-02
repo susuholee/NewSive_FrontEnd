@@ -67,7 +67,6 @@ export default function NewsPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
-      {/* ===== 상단 헤더 (반응형 개선) ===== */}
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold">최신 뉴스</h2>
 
@@ -98,7 +97,7 @@ export default function NewsPage() {
         </div>
       </div>
 
-      {/* ===== 뉴스 리스트 ===== */}
+
       <ul className="space-y-4">
         {visibleNews.map((news) => (
           <li

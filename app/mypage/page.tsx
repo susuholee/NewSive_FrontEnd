@@ -185,7 +185,6 @@ export default function MyPage() {
     <main className="min-h-screen bg-background py-12 text-text-primary">
       <div className="mx-auto max-w-6xl px-4">
         <div className="flex flex-col gap-10 md:flex-row md:items-start">
-          {/* ===== 프로필 사이드 ===== */}
           <aside className="w-full h-fit md:sticky md:top-24 md:w-[280px] rounded-xl bg-white border border-surface-muted shadow-sm overflow-hidden">
             <div className="bg-primary-soft px-4 py-2 text-[11px] text-text-secondary border-b">
               내 프로필
@@ -249,9 +248,9 @@ export default function MyPage() {
             </div>
           </aside>
 
-          {/* ===== 메인 ===== */}
+        
           <div className="flex-1 space-y-10">
-            {/* 내 정보 */}
+        
             <section className="rounded-2xl bg-surface p-8 border border-surface-muted shadow-sm">
               <h2 className="mb-6 text-lg font-semibold">내 정보</h2>
 
@@ -281,7 +280,7 @@ export default function MyPage() {
               </div>
             </section>
 
-            {/* 비밀번호 변경 */}
+     
             <section className="rounded-2xl bg-surface p-8 border border-surface-muted shadow-sm">
               <h2 className="mb-6 text-lg font-semibold">비밀번호 변경</h2>
 
@@ -317,7 +316,7 @@ export default function MyPage() {
               </div>
             </section>
 
-            {/* 회원 탈퇴 */}
+      
             <section className="rounded-2xl bg-surface p-8 border border-surface-muted shadow-sm">
               <h2 className="mb-4 text-lg font-semibold text-red-600">
                 회원 탈퇴

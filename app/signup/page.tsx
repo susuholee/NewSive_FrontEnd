@@ -15,7 +15,7 @@ export default function SignupPage() {
     <main className="flex items-center justify-center bg-background px-4 translate-y-15">
       <div className="w-full max-w-sm rounded-2xl bg-surface p-6 shadow-sm">
 
-        {/* 헤더 최소화 */}
+      
         <div className="mb-4">
           <h1 className="text-xl font-semibold">회원가입</h1>
         </div>

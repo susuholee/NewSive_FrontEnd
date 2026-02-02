@@ -10,11 +10,9 @@ export const getChatSocket = () => {
         });
 
         socket.on("connect", () => {
-            console.log("socket connected", socket?.id)
         });
 
         socket.on("connect_error", (err) => {
-            console.log("socket connect error", err.message)
         });
     }
 

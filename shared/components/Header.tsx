@@ -13,12 +13,7 @@ import LoginRequiredModal from '@/shared/components/LoginRequiredModal';
 import { logout as logoutApi } from '../api/auth.api';
 import { ConfirmModal } from './ConfirmModal';
 
-import {
-  getNotifications,
-  getUnreadCount,
-  readNotification,
-  deleteReadNotifications,
-} from '@/shared/api/notifications.api';
+import { getNotifications, getUnreadCount, readNotification,  deleteReadNotifications} from '@/shared/api/notifications.api';
 
 import type { Notification } from '../types/notification';
 import { notificationUIMap } from '@/shared/constants/notificationUI';
@@ -153,11 +148,11 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Right */}
+        
           <div className="relative flex items-center gap-2 sm:gap-3">
             {user ? (
               <>
-                {/* Notification */}
+            
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={(e) => {

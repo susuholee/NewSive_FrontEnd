@@ -326,7 +326,7 @@ export default function ChatPage() {
                           저장
                         </button>
 
-                        {/* 취소 버튼 */}
+                     
                         <button
                           onClick={() => {
                             setEditingMessageId(null);
