@@ -18,6 +18,8 @@ type FilePreview = {
   type: "IMAGE" | "VIDEO";
 };
 
+
+
 export default function ChatPage() {
   useRequireAuth();
 
