@@ -311,7 +311,7 @@ const tabs = [
                
                   <div className="mt-3 flex justify-end gap-2">
                     <button
-                      onClick={() => router.push(`/chat/friendid/${f.friendId}`)}
+                      onClick={() =>router.push(`/chat?friendId=${f.friendId}`)}
                       className="
                         rounded-lg
                         bg-primary

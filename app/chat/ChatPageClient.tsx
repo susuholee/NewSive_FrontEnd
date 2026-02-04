@@ -3,7 +3,7 @@
 import { useAuthStore } from "@/shared/store/authStore";
 import { useRequireAuth } from "@/shared/hooks/useRequireAuth";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { getChatSocket, closeChatSocket } from "@/shared/socket/chatSocket";
 import type { Socket } from "socket.io-client";
 import type { ChatMessage } from "@/shared/types/chat";
@@ -18,13 +18,14 @@ type FilePreview = {
   type: "IMAGE" | "VIDEO";
 };
 
-
-
 export default function ChatPage() {
   useRequireAuth();
 
   const user = useAuthStore((state) => state.user);
-  const { friendId } = useParams<{ friendId: string }>();
+
+  const searchParams = useSearchParams();
+  const friendId = searchParams.get("friendId");
+
   const queryClient = useQueryClient();
 
   const [realtimeMessages, setRealtimeMessages] = useState<ChatMessage[]>([]);
@@ -48,7 +49,13 @@ export default function ChatPage() {
   const roomIdRef = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-
+  if (!friendId) {
+    return (
+      <div className="flex h-screen items-center justify-center text-text-secondary">
+        잘못된 접근입니다
+      </div>
+    );
+  }
 
   useEffect(() => {
     if (!user || !friendId) return;
@@ -148,7 +155,6 @@ export default function ChatPage() {
     };
   }, [user, friendId, queryClient]);
 
-
   const { data: history = [] } = useQuery({
     queryKey: ["chatMessages", roomId],
     queryFn: () => getChatMessages(roomId!, 30),
@@ -162,8 +168,6 @@ export default function ChatPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
-
-
 
   const handleSendMessage = async () => {
     if (!roomIdRef.current) return;
@@ -189,7 +193,6 @@ export default function ChatPage() {
     setFiles([]);
     setFilePreviews([]);
   };
-
 
   const handleUpdateMessage = (messageId: string) => {
     if (!editingContent.trim()) return;
@@ -217,7 +220,6 @@ export default function ChatPage() {
 
   return (
     <main className="flex h-screen flex-col bg-background">
-   
       <header className="flex items-center gap-3 border-b border-surface-muted px-5 py-4">
         {peerUser && (
           <>
@@ -232,7 +234,6 @@ export default function ChatPage() {
           </>
         )}
       </header>
-
 
       <section className="flex-1 overflow-y-auto px-4 py-6 space-y-4 pb-24">
         {messages.map((msg) => {
@@ -269,7 +270,6 @@ export default function ChatPage() {
                   </p>
                 ) : (
                   <>
-                
                     {msg.medias?.map((m) => (
                       <div
                         key={m.id}
@@ -292,74 +292,55 @@ export default function ChatPage() {
                       </div>
                     ))}
 
-            
-                  {msg.content && (
-                  <>
-                    {isEditing ? (
-                      <div className="flex items-center gap-2">
-                        <input
-                          autoFocus
-                          value={editingContent}
-                          onChange={(e) => setEditingContent(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") handleUpdateMessage(msg.id);
-                            if (e.key === "Escape") {
-                              setEditingMessageId(null);
-                              setEditingContent("");
-                            }
-                          }}
-                          className="flex-1 rounded-lg bg-white/70 px-2 py-1 text-sm"
-                        />
+                    {msg.content && (
+                      <>
+                        {isEditing ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              autoFocus
+                              value={editingContent}
+                              onChange={(e) =>
+                                setEditingContent(e.target.value)
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter")
+                                  handleUpdateMessage(msg.id);
+                                if (e.key === "Escape") {
+                                  setEditingMessageId(null);
+                                  setEditingContent("");
+                                }
+                              }}
+                              className="flex-1 rounded-lg bg-white/70 px-2 py-1 text-sm"
+                            />
 
-                    
-                        <button
-                          onClick={() => handleUpdateMessage(msg.id)}
-                          className="
-                            rounded-md
-                            bg-primary
-                            px-2 py-1
-                            text-xs
-                            text-white
-                            hover:bg-primary-hover
-                            transition
-                            whitespace-nowrap
-                          "
-                        >
-                          저장
-                        </button>
+                            <button
+                              onClick={() => handleUpdateMessage(msg.id)}
+                              className="rounded-md bg-primary px-2 py-1 text-xs text-white"
+                            >
+                              저장
+                            </button>
 
-                     
-                        <button
-                          onClick={() => {
-                            setEditingMessageId(null);
-                            setEditingContent("");
-                          }}
-                          className="
-                            rounded-md
-                            bg-surface-muted
-                            px-2 py-1
-                            text-xs
-                            text-text-secondary
-                            hover:bg-surface
-                            transition
-                            whitespace-nowrap
-                          "
-                        >
-                          취소
-                        </button>
-                      </div>
-                    ) : (
-                      <p>{msg.content}</p>
+                            <button
+                              onClick={() => {
+                                setEditingMessageId(null);
+                                setEditingContent("");
+                              }}
+                              className="rounded-md bg-surface-muted px-2 py-1 text-xs text-text-secondary"
+                            >
+                              취소
+                            </button>
+                          </div>
+                        ) : (
+                          <p>{msg.content}</p>
+                        )}
+
+                        {msg.editedAt && !isEditing && (
+                          <span className="ml-1 text-[10px] text-text-secondary">
+                            (수정됨)
+                          </span>
+                        )}
+                      </>
                     )}
-
-                    {msg.editedAt && !isEditing && (
-                      <span className="ml-1 text-[10px] text-text-secondary">
-                        (수정됨)
-                      </span>
-                    )}
-                  </>
-                )}
-
                   </>
                 )}
 
@@ -370,7 +351,7 @@ export default function ChatPage() {
                         setEditingMessageId(msg.id);
                         setEditingContent(msg.content ?? "");
                       }}
-                      className="text-xs text-text-secondary opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                      className="text-xs text-text-secondary opacity-0 group-hover:opacity-100 transition"
                     >
                       수정
                     </button>
@@ -387,7 +368,6 @@ export default function ChatPage() {
         <div ref={bottomRef} />
       </section>
 
- 
       {filePreviews.length > 0 && (
         <div className="border-t border-surface-muted bg-surface px-4 py-3">
           <div className="relative w-40 overflow-hidden rounded-xl">
@@ -433,9 +413,7 @@ export default function ChatPage() {
                 {
                   file,
                   url: URL.createObjectURL(file),
-                  type: file.type.startsWith("video")
-                    ? "VIDEO"
-                    : "IMAGE",
+                  type: file.type.startsWith("video") ? "VIDEO" : "IMAGE",
                 },
               ]);
             }}
@@ -443,7 +421,7 @@ export default function ChatPage() {
 
           <label
             htmlFor="media-input"
-            className="cursor-pointer rounded-xl bg-surface-muted px-4 py-2 text-sm text-text-secondary hover:bg-primary-soft/40 hover:text-primary transition"
+            className="cursor-pointer rounded-xl bg-surface-muted px-4 py-2 text-sm text-text-secondary"
           >
             파일 첨부
           </label>
