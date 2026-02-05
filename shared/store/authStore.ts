@@ -3,17 +3,15 @@ import type { User } from '@/shared/types/user';
 import { useFriendStore } from './useFriendStore';
 
 type AuthState = {
-  user: User | null;
+  user: User | null | undefined;
 
-  setUser: (user: User) => void;
-
+  setUser: (user: User | null) => void;
   patchUser: (partial: Partial<User>) => void;
-
   logout: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+  user: undefined, 
 
   setUser: (user) =>
     set({

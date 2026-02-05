@@ -9,6 +9,7 @@ export function useRequireAuth() {
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
+     if (user === undefined) return;
     if (user === null) {
       router.replace('/login');
     }

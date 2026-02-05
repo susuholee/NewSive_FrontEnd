@@ -153,7 +153,6 @@ export default function ChatPage() {
     };
   }, [user, friendId, queryClient]);
 
-  /* ===================== QUERY ===================== */
   const { data: history = [] } = useQuery({
     queryKey: ["chatMessages", roomId],
     queryFn: () => getChatMessages(roomId!, 30),
@@ -168,7 +167,6 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  /* ===================== ACTIONS ===================== */
   const handleSendMessage = async () => {
     if (!roomIdRef.current) return;
 
